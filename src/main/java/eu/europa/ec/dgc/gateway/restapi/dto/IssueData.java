@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class IssueData {
-  private String hash;
+    private String hash;
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class DGCIObject {
-  private long id;
-  private String dgci;
+public class DgciIdentifier {
+    private long id;
+    private String dgci;
 }

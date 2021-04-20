@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class SignatureData {
-  private String tan;
-  private String signature;
+    private String tan;
+    private String signature;
 }

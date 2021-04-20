@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TANService {
+public class TanService {
 }
