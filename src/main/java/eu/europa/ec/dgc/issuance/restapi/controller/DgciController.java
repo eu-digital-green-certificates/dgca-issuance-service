@@ -2,6 +2,7 @@ package eu.europa.ec.dgc.issuance.restapi.controller;
 
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
+import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import eu.europa.ec.dgc.issuance.service.DgciService;
@@ -31,6 +32,11 @@ public class DgciController {
     public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @RequestBody IssueData issueData)
             throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
+    }
+
+    @GetMapping(value = "/V1/DE/{opaque}/{hash}")
+    public ResponseEntity<DidDocument> getDidDocument(@PathVariable String opaque, String hash) {
+        return ResponseEntity.ok(dgciService.getDidDocument(opaque,hash));
     }
 
     @GetMapping(value = "/status")

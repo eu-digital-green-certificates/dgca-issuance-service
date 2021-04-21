@@ -78,4 +78,8 @@ public class CertificateService {
         byte[] signature = privateSignature.sign();
         return Base64.getEncoder().encodeToString(signature);
     }
+
+    public byte[] publicKey() {
+        return publicKey.getEncoded();
+    }
 }
