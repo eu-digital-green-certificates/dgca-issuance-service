@@ -16,15 +16,19 @@ import java.util.List;
 import kotlin.Pair;
 
 /**
- * Adapter for EHDC kotlin code
+ * Adapter for EHDC kotlin code.
  */
-public class EHDCryptoService implements CryptoService {
+public class EhdCryptoService implements CryptoService {
     private final X509Certificate cert;
     private final byte[] kid;
     private final List<Pair<HeaderKeys, CBORObject>> headers;
     private final PrivateKey privateKey;
 
-    public EHDCryptoService(CertificateService certificateService) {
+    /**
+     * the constructor.
+     * @param certificateService certificateService
+     */
+    public EhdCryptoService(CertificateService certificateService) {
         this.cert = certificateService.getCertficate();
         this.privateKey = certificateService.getPrivateKey();
         kid = new PkiUtils().calcKid(cert);
@@ -40,7 +44,7 @@ public class EHDCryptoService implements CryptoService {
     @Override
     public COSE.OneKey getCborSigningKey() {
         try {
-            return new OneKey(cert.getPublicKey(),privateKey);
+            return new OneKey(cert.getPublicKey(), privateKey);
         } catch (CoseException e) {
             throw new RuntimeException(e);
         }
@@ -48,9 +52,9 @@ public class EHDCryptoService implements CryptoService {
 
     @Override
     public COSE.OneKey getCborVerificationKey(byte[] bytes) {
-        if (Arrays.compare(this.kid,kid)==0) {
+        if (Arrays.compare(this.kid, kid) == 0) {
             try {
-                return new OneKey(cert.getPublicKey(),privateKey);
+                return new OneKey(cert.getPublicKey(), privateKey);
             } catch (CoseException e) {
                 throw new RuntimeException(e);
             }
@@ -61,7 +65,7 @@ public class EHDCryptoService implements CryptoService {
 
     @Override
     public Certificate getCertificate(byte[] kid) {
-        if (Arrays.compare(this.kid,kid)==0) {
+        if (Arrays.compare(this.kid, kid) == 0) {
             return cert;
         } else {
             throw new IllegalArgumentException("unknown kid");

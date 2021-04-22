@@ -24,16 +24,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class CertController {
     private final CertificateService certificateService;
 
+    /**
+     * create Vaccination Certificate.
+     * @param vaccinationData vaccinationData
+     * @return result
+     */
     @PostMapping(value = "create",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResultCbor> initDgci(@RequestBody VaccinationData vaccinationData) {
+    public ResponseEntity<ResultCbor> createVaccinationCertificate(@RequestBody VaccinationData vaccinationData) {
         // Taken from https://github.com/ehn-digital-green-development/hcert-kotlin/blob/main/src/test/kotlin/ehn/techiop/hcert/kotlin/chain/CborProcessingChainTest.kt
-        EHDCryptoService ehdCryptoService = new EHDCryptoService(certificateService);
+        EhdCryptoService ehdCryptoService = new EhdCryptoService(certificateService);
         val coseService = new DefaultCoseService(ehdCryptoService);
         val contextIdentifierService = new DefaultContextIdentifierService();
         val compressorService = new DefaultCompressorService();
         val base45Service = new DefaultBase45Service();
         val cborService = new DefaultCborService();
-        CborProcessingChain cborProcessingChain = new CborProcessingChain(cborService, coseService, contextIdentifierService, compressorService, base45Service);
+        CborProcessingChain cborProcessingChain =
+                new CborProcessingChain(cborService, coseService,
+                        contextIdentifierService, compressorService, base45Service);
         ResultCbor resultCbor = cborProcessingChain.process(vaccinationData);
         return ResponseEntity.ok(resultCbor);
     }
