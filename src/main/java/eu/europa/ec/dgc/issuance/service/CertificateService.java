@@ -9,12 +9,15 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,6 +25,7 @@ public class CertificateService {
     private KeyStore certKeyStore;
     private PrivateKey privateKey;
     private PublicKey publicKey;
+    private java.security.cert.Certificate cert;
 
     // TODO refactor cert keystore to be configurable
 
@@ -40,6 +44,9 @@ public class CertificateService {
         final char[] password = "dgca".toCharArray();
         final String keyName = "edgc_dev_test";
 
+        Security.addProvider(new BouncyCastleProvider());
+        Security.setProperty("crypto.policy", "unlimited");
+
         KeyStore keyStore = KeyStore.getInstance("JKS");
         try (InputStream is = new FileInputStream("src/test/resources/cert_devtest_keystore.jks")) {
             keyStore.load(is, password);
@@ -48,10 +55,18 @@ public class CertificateService {
 
             KeyStore.PrivateKeyEntry privateKeyEntry =
                     (KeyStore.PrivateKeyEntry) keyStore.getEntry(keyName, keyPassword);
-            java.security.cert.Certificate cert = keyStore.getCertificate(keyName);
+            cert = keyStore.getCertificate(keyName);
             publicKey = cert.getPublicKey();
             privateKey = privateKeyEntry.getPrivateKey();
         }
+    }
+
+    public X509Certificate getCertficate() {
+        return (X509Certificate) cert;
+    }
+
+    public PrivateKey getPrivateKey() {
+        return privateKey;
     }
 
     /**

@@ -20,6 +20,10 @@
       <id>dgc-github</id>
       <url>https://maven.pkg.github.com/${github.organization}/*</url>
     </repository>
+    <repository>
+      <id>ehd-github</id>
+      <url>https://maven.pkg.github.com/ ehn-digital-green-development/*</url>
+    </repository>
   </repositories>
 
   <properties>
@@ -278,14 +282,19 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>net.javacrumbs.shedlock</groupId>
-      <artifactId>shedlock-provider-jdbc-template</artifactId>
-      <version>${shedlock.version}</version>
+      <groupId>ehn.techiop.hcert</groupId>
+      <artifactId>hcert-kotlin</artifactId>
+      <version>0.1.6-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>net.javacrumbs.shedlock</groupId>
-      <artifactId>shedlock-spring</artifactId>
-      <version>${shedlock.version}</version>
+      <groupId>com.augustcellars.cose</groupId>
+      <artifactId>cose-java</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+      <version>1.4.31</version>
     </dependency>
   </dependencies>
 
