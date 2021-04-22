@@ -9,6 +9,7 @@ import ehn.techiop.hcert.kotlin.chain.impl.DefaultCompressorService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultContextIdentifierService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCoseService;
 import eu.europa.ec.dgc.issuance.service.CertificateService;
+import eu.europa.ec.dgc.issuance.service.EhdCryptoService;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.springframework.http.MediaType;

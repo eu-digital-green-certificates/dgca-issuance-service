@@ -21,6 +21,7 @@
 package eu.europa.ec.dgc.issuance;
 
 import eu.europa.ec.dgc.issuance.config.DgcConfigProperties;
+import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
@@ -33,7 +34,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * The Application class.
  */
 @SpringBootApplication
-@EnableConfigurationProperties(DgcConfigProperties.class)
+@EnableConfigurationProperties({DgcConfigProperties.class, IssuanceConfigProperties.class})
 @OpenAPIDefinition(
     info = @Info(
         title = "Digital Green Certificate Issuance",

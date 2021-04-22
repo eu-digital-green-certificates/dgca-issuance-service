@@ -19,9 +19,33 @@ public class DgciEntity {
     @Column(name = "id")
     private Long id;
 
-    /**
-     * Timestamp of the Record creation.
-     */
+    @Column(nullable = false)
+    private String dgci;
+
     @Column(name = "timestamp_created", nullable = false)
     private ZonedDateTime createdAt = ZonedDateTime.now();
+
+    @Column
+    private ZonedDateTime expires;
+
+    @Column(length = 512)
+    private String certHash;
+
+    @Column(length = 512)
+    private String hashedTan;
+
+    @Column(name = "type")
+    private GreenCertificateType greenCertificateType;
+
+    @Column(name = "retry_coutner")
+    private int retryCounter;
+
+    @Column
+    private boolean revoked;
+
+    @Column
+    private boolean claimed;
+
+    @Column
+    private boolean locked;
 }

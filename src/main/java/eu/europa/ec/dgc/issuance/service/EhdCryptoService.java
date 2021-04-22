@@ -1,4 +1,4 @@
-package eu.europa.ec.dgc.issuance.restapi.controller;
+package eu.europa.ec.dgc.issuance.service;
 
 import COSE.AlgorithmID;
 import COSE.CoseException;
@@ -6,8 +6,6 @@ import COSE.HeaderKeys;
 import COSE.OneKey;
 import com.upokecenter.cbor.CBORObject;
 import ehn.techiop.hcert.kotlin.chain.CryptoService;
-import ehn.techiop.hcert.kotlin.chain.impl.PkiUtils;
-import eu.europa.ec.dgc.issuance.service.CertificateService;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -31,7 +29,7 @@ public class EhdCryptoService implements CryptoService {
     public EhdCryptoService(CertificateService certificateService) {
         this.cert = certificateService.getCertficate();
         this.privateKey = certificateService.getPrivateKey();
-        kid = new PkiUtils().calcKid(cert);
+        kid = certificateService.getKid();
         headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.RSA_PSS_256.AsCBOR()),
                 new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
     }

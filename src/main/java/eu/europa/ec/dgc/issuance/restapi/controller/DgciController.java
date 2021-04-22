@@ -34,6 +34,7 @@ public class DgciController {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
     }
 
+    // Public API to get DID document of certification not needed in current architecture
     @GetMapping(value = "/V1/DE/{opaque}/{hash}")
     public ResponseEntity<DidDocument> getDidDocument(@PathVariable String opaque, String hash) {
         return ResponseEntity.ok(dgciService.getDidDocument(opaque,hash));

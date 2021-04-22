@@ -1,5 +1,6 @@
 package eu.europa.ec.dgc.issuance.service;
 
+import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.repository.DgciRepository;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
@@ -11,6 +12,8 @@ import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,6 +25,7 @@ public class DgciService {
     private final DgciRepository dgciRepository;
     private final TanService tanService;
     private final CertificateService certificateService;
+    private final IssuanceConfigProperties issuanceConfigProperties;
 
     /**
      * init dbgi.
@@ -31,9 +35,11 @@ public class DgciService {
      */
     public DgciIdentifier initDgci(DgciInit dgciInit) {
         DgciEntity dgciEntity = new DgciEntity();
+        String dgci = issuanceConfigProperties+ UUID.randomUUID().toString();
+        dgciEntity.setDgci(dgci);
         dgciRepository.saveAndFlush(dgciEntity);
         // TODO how create the DGCI identifier
-        return new DgciIdentifier(dgciEntity.getId(), "did:web:authority:dgci:V1:DE:blabla:" + dgciEntity.getId());
+        return new DgciIdentifier(dgciEntity.getId(), dgci);
     }
 
     /**
@@ -44,9 +50,19 @@ public class DgciService {
      * @return signature data
      */
     public SignatureData finishDgci(long dgciId, IssueData issueData) throws Exception {
-        String signatureBase64 = certificateService.signHash(issueData.getHash());
-        // TODO TAN fake
-        return new SignatureData("34932382303049", signatureBase64);
+        Optional<DgciEntity> dgciEntityOpt = dgciRepository.findById(dgciId);
+        if (dgciEntityOpt.isPresent()) {
+            var dgciEntity = dgciEntityOpt.get();
+            String signatureBase64 = certificateService.signHash(issueData.getHash());
+            String tan = tanService.generateNewTan();
+            dgciEntity.setHashedTan(tanService.hashTan(tan));
+            dgciEntity.setGreenCertificateType(issueData.getGreenCertificateType());
+            dgciEntity.setCertHash(signatureBase64);
+            return new SignatureData(tan, signatureBase64);
+        } else {
+            // TODO dgci not found by id Make 404 for it
+            throw new IllegalArgumentException("dgci with id "+dgciId+ " not found");
+        }
     }
 
     /**

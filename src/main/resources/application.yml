@@ -26,6 +26,8 @@ management:
         exclude: "*"
   server:
     port: -1
+issuance:
+  dgciPrefix:
 dgc:
   trustAnchor:
     keyStorePath: /ec/prod/app/san/dgc/dgc-ta.jks
