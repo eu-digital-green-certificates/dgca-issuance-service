@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,6 +83,8 @@ public class CertController {
         new CBORDump().dumpCBOR(message.GetContent(),stringWriter);
         result.put("cborDump",stringWriter.getBuffer().toString());
         result.put("cborBytes",Base64.getEncoder().encodeToString(message.GetContent()));
+        result.put("coseBase64",Base64.getEncoder().encodeToString(cose));
+        result.put("coseHEX", Hex.toHexString(cose));
 
         return ResponseEntity.ok(result);
     }
