@@ -8,4 +8,5 @@ import lombok.Data;
 public class DgciIdentifier {
     private long id;
     private String dgci;
+    private String kid;
 }

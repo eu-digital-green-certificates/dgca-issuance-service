@@ -10,6 +10,12 @@ import ehn.techiop.hcert.kotlin.chain.impl.DefaultContextIdentifierService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCoseService;
 import eu.europa.ec.dgc.issuance.service.CertificateService;
 import eu.europa.ec.dgc.issuance.service.EhdCryptoService;
+import eu.europa.ec.dgc.issuance.utils.CBORDump;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.springframework.http.MediaType;
@@ -24,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class CertController {
     private final CertificateService certificateService;
+    private final EhdCryptoService ehdCryptoService;
 
     /**
      * create Vaccination Certificate.
@@ -33,7 +40,6 @@ public class CertController {
     @PostMapping(value = "create",consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResultCbor> createVaccinationCertificate(@RequestBody VaccinationData vaccinationData) {
         // Taken from https://github.com/ehn-digital-green-development/hcert-kotlin/blob/main/src/test/kotlin/ehn/techiop/hcert/kotlin/chain/CborProcessingChainTest.kt
-        EhdCryptoService ehdCryptoService = new EhdCryptoService(certificateService);
         val coseService = new DefaultCoseService(ehdCryptoService);
         val contextIdentifierService = new DefaultContextIdentifierService();
         val compressorService = new DefaultCompressorService();
@@ -44,5 +50,19 @@ public class CertController {
                         contextIdentifierService, compressorService, base45Service);
         ResultCbor resultCbor = cborProcessingChain.process(vaccinationData);
         return ResponseEntity.ok(resultCbor);
+    }
+
+    @PostMapping(value="dumpCBOR",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> decodeCBOR(@RequestBody String cbor) throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        new CBORDump().dumpCBOR(Base64.getDecoder().decode(cbor),stringWriter);
+        return ResponseEntity.ok(stringWriter.getBuffer().toString());
+    }
+
+    @PostMapping(value="decodeEGC",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String,Object>> decodeEGCert(@RequestBody String prefixedEncodedCompressedCose) throws IOException {
+        Map<String,Object> result = new HashMap<>();
+        // TODO decodeEGC devel endpoint
+        return ResponseEntity.ok(result);
     }
 }

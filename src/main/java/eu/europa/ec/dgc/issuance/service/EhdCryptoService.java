@@ -12,10 +12,12 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import kotlin.Pair;
+import org.springframework.stereotype.Component;
 
 /**
  * Adapter for EHDC kotlin code.
  */
+@Component
 public class EhdCryptoService implements CryptoService {
     private final X509Certificate cert;
     private final byte[] kid;

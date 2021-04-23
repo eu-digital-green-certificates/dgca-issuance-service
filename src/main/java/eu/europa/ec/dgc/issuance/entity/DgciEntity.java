@@ -19,7 +19,7 @@ public class DgciEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String dgci;
 
     @Column(name = "timestamp_created", nullable = false)
@@ -31,7 +31,7 @@ public class DgciEntity {
     @Column(length = 512)
     private String certHash;
 
-    @Column(length = 512)
+    @Column(length = 512, unique = true)
     private String hashedTan;
 
     @Column(name = "type")

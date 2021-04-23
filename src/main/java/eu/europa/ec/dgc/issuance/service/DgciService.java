@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -35,11 +36,15 @@ public class DgciService {
      */
     public DgciIdentifier initDgci(DgciInit dgciInit) {
         DgciEntity dgciEntity = new DgciEntity();
-        String dgci = issuanceConfigProperties+ UUID.randomUUID().toString();
+        String dgci = generateDgci();
         dgciEntity.setDgci(dgci);
         dgciRepository.saveAndFlush(dgciEntity);
-        // TODO how create the DGCI identifier
-        return new DgciIdentifier(dgciEntity.getId(), dgci);
+        return new DgciIdentifier(dgciEntity.getId(), dgci, certificateService.getKidAsBase64());
+    }
+
+    @NotNull
+    private String generateDgci() {
+        return issuanceConfigProperties + UUID.randomUUID().toString();
     }
 
     /**

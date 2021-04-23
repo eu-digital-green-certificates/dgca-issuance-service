@@ -75,6 +75,10 @@ public class CertificateService {
         return kid;
     }
 
+    public String getKidAsBase64() {
+        return Base64.getEncoder().encodeToString(kid);
+    }
+
     public X509Certificate getCertficate() {
         return (X509Certificate) cert;
     }
