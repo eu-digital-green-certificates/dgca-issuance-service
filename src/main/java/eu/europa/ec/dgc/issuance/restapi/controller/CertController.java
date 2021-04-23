@@ -1,8 +1,15 @@
 package eu.europa.ec.dgc.issuance.restapi.controller;
 
+import COSE.CoseException;
+import COSE.Message;
+import COSE.Sign1Message;
+import ehn.techiop.hcert.kotlin.chain.Base45Service;
 import ehn.techiop.hcert.kotlin.chain.CborProcessingChain;
+import ehn.techiop.hcert.kotlin.chain.CompressorService;
+import ehn.techiop.hcert.kotlin.chain.ContextIdentifierService;
 import ehn.techiop.hcert.kotlin.chain.ResultCbor;
 import ehn.techiop.hcert.kotlin.chain.VaccinationData;
+import ehn.techiop.hcert.kotlin.chain.VerificationResult;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultBase45Service;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCborService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCompressorService;
@@ -60,9 +67,22 @@ public class CertController {
     }
 
     @PostMapping(value="decodeEGC",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String,Object>> decodeEGCert(@RequestBody String prefixedEncodedCompressedCose) throws IOException {
+    public ResponseEntity<Map<String,Object>> decodeEGCert(@RequestBody String prefixedEncodedCompressedCose) throws IOException, CoseException {
         Map<String,Object> result = new HashMap<>();
-        // TODO decodeEGC devel endpoint
+        VerificationResult verificationResult = new VerificationResult();
+        ContextIdentifierService contextIdentifierService = new DefaultContextIdentifierService();
+        Base45Service base45Service = new DefaultBase45Service();
+        CompressorService compressorService = new DefaultCompressorService();
+        val plainInput = contextIdentifierService.decode(prefixedEncodedCompressedCose, verificationResult);
+        val compressedCose = base45Service.decode(plainInput, verificationResult);
+        val cose = compressorService.decode(compressedCose, verificationResult);
+        Message message = Sign1Message.DecodeFromBytes(cose);
+
+        StringWriter stringWriter = new StringWriter();
+        new CBORDump().dumpCBOR(message.GetContent(),stringWriter);
+        result.put("cborDump",stringWriter.getBuffer().toString());
+        result.put("cborBytes",Base64.getEncoder().encodeToString(message.GetContent()));
+
         return ResponseEntity.ok(result);
     }
 }
