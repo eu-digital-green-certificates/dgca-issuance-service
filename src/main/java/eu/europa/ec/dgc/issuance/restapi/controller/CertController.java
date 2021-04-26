@@ -1,7 +1,6 @@
 package eu.europa.ec.dgc.issuance.restapi.controller;
 
 import COSE.CoseException;
-import COSE.Message;
 import COSE.Sign1Message;
 import ehn.techiop.hcert.kotlin.chain.Base45Service;
 import ehn.techiop.hcert.kotlin.chain.CborProcessingChain;
@@ -15,6 +14,8 @@ import ehn.techiop.hcert.kotlin.chain.impl.DefaultCborService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCompressorService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultContextIdentifierService;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCoseService;
+import ehn.techiop.hcert.kotlin.chain.impl.PrefilledCertificateRepository;
+import ehn.techiop.hcert.kotlin.chain.impl.VerificationCryptoService;
 import eu.europa.ec.dgc.issuance.service.CertificateService;
 import eu.europa.ec.dgc.issuance.service.EhdCryptoService;
 import eu.europa.ec.dgc.issuance.utils.CBORDump;
@@ -77,7 +78,12 @@ public class CertController {
         val plainInput = contextIdentifierService.decode(prefixedEncodedCompressedCose, verificationResult);
         val compressedCose = base45Service.decode(plainInput, verificationResult);
         val cose = compressorService.decode(compressedCose, verificationResult);
-        Message message = Sign1Message.DecodeFromBytes(cose);
+        Sign1Message message = (Sign1Message) Sign1Message.DecodeFromBytes(cose);
+
+        PrefilledCertificateRepository prefilledCertificateRepository = new PrefilledCertificateRepository();
+        prefilledCertificateRepository.addCertificate(certificateService.getKid(),certificateService.getCertficate());
+        VerificationCryptoService verificationCryptoService = new VerificationCryptoService(prefilledCertificateRepository);
+        result.put("validated",message.validate(verificationCryptoService.getCborVerificationKey(certificateService.getKid())));
 
         StringWriter stringWriter = new StringWriter();
         new CBORDump().dumpCBOR(message.GetContent(),stringWriter);
@@ -85,7 +91,7 @@ public class CertController {
         result.put("cborBytes",Base64.getEncoder().encodeToString(message.GetContent()));
         result.put("coseBase64",Base64.getEncoder().encodeToString(cose));
         result.put("coseHEX", Hex.toHexString(cose));
-
+        result.put("coseProtected",message.getProtectedAttributes().toString());
         return ResponseEntity.ok(result);
     }
 }

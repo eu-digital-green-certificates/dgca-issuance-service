@@ -12,14 +12,20 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.engines.RSABlindedEngine;
+import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
+import org.bouncycastle.crypto.signers.PSSSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Component;
 
@@ -95,20 +101,20 @@ public class CertificateService {
      * @throws InvalidKeyException      exception
      * @throws SignatureException       exception
      */
-    public String signHash(String base64Hash) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public String signHash(String base64Hash) throws CryptoException {
         byte[] hashBytes = Base64.getDecoder().decode(base64Hash);
-        /*
-        // The content is already hash so we need only to encrypt with private key
-        // TODO check if cipher reusing
-        Cipher encryptCipher = Cipher.getInstance("RSA");
-        encryptCipher.init(Cipher.ENCRYPT_MODE, privateKey);
-        byte[] cipherText = encryptCipher.doFinal(hashBytes);
-        return Base64.getEncoder().encodeToString(cipherText);
-         */
-        Signature privateSignature = Signature.getInstance("SHA256withRSA");
-        privateSignature.initSign(privateKey);
-        privateSignature.update(hashBytes);
-        byte[] signature = privateSignature.sign();
+        Digest contentDigest = new CopyDigest();
+        Digest mgfDigest = new SHA256Digest();
+        RSAPrivateCrtKey k = (RSAPrivateCrtKey) privateKey;
+        RSAPrivateCrtKeyParameters keyparam = new RSAPrivateCrtKeyParameters(k.getModulus(),
+                k.getPublicExponent(), k.getPrivateExponent(),
+                k.getPrimeP(), k.getPrimeQ(), k.getPrimeExponentP(), k.getPrimeExponentQ(), k.getCrtCoefficient());
+        RSABlindedEngine rsaBlindedEngine = new RSABlindedEngine();
+        rsaBlindedEngine.init(true,keyparam);
+        PSSSigner pssSigner = new PSSSigner(rsaBlindedEngine,contentDigest,mgfDigest,32, (byte) (-68));
+        pssSigner.init(true,keyparam);
+        pssSigner.update(hashBytes,0,hashBytes.length);
+        byte[] signature = pssSigner.generateSignature();
         return Base64.getEncoder().encodeToString(signature);
     }
 
