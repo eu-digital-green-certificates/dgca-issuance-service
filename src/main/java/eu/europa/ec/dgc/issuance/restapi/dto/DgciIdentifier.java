@@ -9,4 +9,5 @@ public class DgciIdentifier {
     private long id;
     private String dgci;
     private String kid;
+    private int algId;
 }

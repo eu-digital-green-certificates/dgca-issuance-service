@@ -39,7 +39,7 @@ public class DgciService {
         String dgci = generateDgci();
         dgciEntity.setDgci(dgci);
         dgciRepository.saveAndFlush(dgciEntity);
-        return new DgciIdentifier(dgciEntity.getId(), dgci, certificateService.getKidAsBase64());
+        return new DgciIdentifier(dgciEntity.getId(), dgci, certificateService.getKidAsBase64(), certificateService.getAlgId());
     }
 
     @NotNull

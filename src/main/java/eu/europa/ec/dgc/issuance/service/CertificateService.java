@@ -1,10 +1,12 @@
 package eu.europa.ec.dgc.issuance.service;
 
+import COSE.AlgorithmID;
 import ehn.techiop.hcert.kotlin.chain.impl.PkiUtils;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -16,7 +18,9 @@ import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +28,15 @@ import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.engines.RSABlindedEngine;
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.PSSSigner;
+import org.bouncycastle.crypto.signers.StandardDSAEncoding;
+import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -101,8 +111,18 @@ public class CertificateService {
      * @throws InvalidKeyException      exception
      * @throws SignatureException       exception
      */
-    public String signHash(String base64Hash) throws CryptoException {
+    public String signHash(String base64Hash) throws CryptoException, IOException {
         byte[] hashBytes = Base64.getDecoder().decode(base64Hash);
+        byte[] signature;
+        if (publicKey instanceof RSAPublicKey) {
+            signature = signRSAPSS(hashBytes);
+        } else {
+            signature = signEC(hashBytes);
+        }
+        return Base64.getEncoder().encodeToString(signature);
+    }
+
+    private byte[] signRSAPSS(byte[] hashBytes) throws CryptoException {
         Digest contentDigest = new CopyDigest();
         Digest mgfDigest = new SHA256Digest();
         RSAPrivateCrtKey k = (RSAPrivateCrtKey) privateKey;
@@ -115,10 +135,35 @@ public class CertificateService {
         pssSigner.init(true,keyparam);
         pssSigner.update(hashBytes,0,hashBytes.length);
         byte[] signature = pssSigner.generateSignature();
-        return Base64.getEncoder().encodeToString(signature);
+        return signature;
+    }
+
+    private byte[] signEC(byte[] hash) throws IOException {
+        java.security.interfaces.ECPrivateKey privKey = (java.security.interfaces.ECPrivateKey)privateKey;
+        ECParameterSpec s = EC5Util.convertSpec(privKey.getParams());
+        ECPrivateKeyParameters keyparam = new ECPrivateKeyParameters(
+                privKey.getS(),
+                new ECDomainParameters(s.getCurve(), s.getG(), s.getN(), s.getH(), s.getSeed()));
+        ECDSASigner pssSigner = new ECDSASigner();
+        pssSigner.init(true,keyparam);
+        BigInteger[] result3BI = pssSigner.generateSignature(hash);
+        byte[] result3 = StandardDSAEncoding.INSTANCE.encode(pssSigner.getOrder(), result3BI[0], result3BI[1]);
+        return result3;
     }
 
     public byte[] publicKey() {
         return publicKey.getEncoded();
+    }
+
+    public int getAlgId() {
+        int algId;
+        if (publicKey instanceof RSAPublicKey) {
+            algId = AlgorithmID.RSA_PSS_256.AsCBOR().AsInt32();
+        } else if (publicKey instanceof ECPublicKey) {
+            algId = AlgorithmID.ECDSA_256.AsCBOR().AsInt32();
+        } else {
+            throw new IllegalArgumentException("unsupported key type");
+        }
+        return algId;
     }
 }
