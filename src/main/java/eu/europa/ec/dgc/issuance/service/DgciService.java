@@ -3,6 +3,8 @@ package eu.europa.ec.dgc.issuance.service;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.repository.DgciRepository;
+import eu.europa.ec.dgc.issuance.restapi.dto.ClaimRequest;
+import eu.europa.ec.dgc.issuance.restapi.dto.ClaimResponse;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
 import eu.europa.ec.dgc.issuance.restapi.dto.DidAuthentication;
@@ -39,7 +41,8 @@ public class DgciService {
         String dgci = generateDgci();
         dgciEntity.setDgci(dgci);
         dgciRepository.saveAndFlush(dgciEntity);
-        return new DgciIdentifier(dgciEntity.getId(), dgci, certificateService.getKidAsBase64(), certificateService.getAlgId());
+        log.info("init dgci: "+dgci+ " id: "+dgciEntity.getId());
+        return new DgciIdentifier(dgciEntity.getId(), dgci, certificateService.getKidAsBase64(), certificateService.getAlgId(),issuanceConfigProperties.getCountryCode());
     }
 
     @NotNull
@@ -63,10 +66,11 @@ public class DgciService {
             dgciEntity.setHashedTan(tanService.hashTan(tan));
             dgciEntity.setGreenCertificateType(issueData.getGreenCertificateType());
             dgciEntity.setCertHash(signatureBase64);
+            log.info("signed for "+dgciId);
             return new SignatureData(tan, signatureBase64);
         } else {
-            // TODO dgci not found by id Make 404 for it
-            throw new IllegalArgumentException("dgci with id "+dgciId+ " not found");
+            log.warn("can not find dgci with id "+dgciId);
+            throw new DGCINotFound("dgci with id "+dgciId+ " not found");
         }
     }
 
@@ -93,5 +97,15 @@ public class DgciService {
         didAuthentications.add(didAuthentication);
         didDocument.setAuthentication(didAuthentications);
         return didDocument;
+    }
+
+    public ClaimResponse claimUpdate(ClaimRequest claimRequest) {
+        ClaimResponse claimResponse = new ClaimResponse();
+        return claimResponse;
+    }
+
+    public ClaimResponse claim(ClaimRequest claimRequest) {
+        ClaimResponse claimResponse = new ClaimResponse();
+        return claimResponse;
     }
 }

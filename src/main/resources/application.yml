@@ -5,7 +5,7 @@ spring:
     group:
       "dev": "h2"
   application:
-    name: eu-digital-green-certificates-gateway
+    name: eu-digital-green-certificates-issuence
   datasource:
     jndi-name: jdbc/dgc
   jpa:
@@ -15,10 +15,6 @@ spring:
   liquibase:
     enabled: false
     change-log: classpath:db/changelog.xml
-  task:
-    scheduling:
-      pool:
-        size: 5
 management:
   endpoints:
     web:

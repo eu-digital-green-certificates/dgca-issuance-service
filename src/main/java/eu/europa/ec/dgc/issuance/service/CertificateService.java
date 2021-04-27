@@ -1,8 +1,9 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import COSE.AlgorithmID;
-import ehn.techiop.hcert.kotlin.chain.impl.PkiUtils;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
+import eu.europa.ec.dgc.utils.CertificateUtils;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +25,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -40,6 +42,7 @@ import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class CertificateService {
     private final IssuanceConfigProperties issuanceConfigProperties;
@@ -72,6 +75,11 @@ public class CertificateService {
 
         KeyStore keyStore = KeyStore.getInstance("JKS");
 
+        File keyFile = new File(issuanceConfigProperties.getKeyStoreFile());
+        if (!keyFile.isFile()) {
+            log.error("keyfile not found on: "+keyFile+ " please adapt the configuration property: issuance.keyStoreFile");
+            throw new DGCINotFound("keyfile not found on: "+keyFile+ " please adapt the configuration property: issuance.keyStoreFile");
+        }
         try (InputStream is = new FileInputStream(issuanceConfigProperties.getKeyStoreFile())) {
             final char[] privateKeyPassword = issuanceConfigProperties.getPrivateKeyPassword().toCharArray();
             keyStore.load(is, privateKeyPassword);
@@ -83,7 +91,10 @@ public class CertificateService {
             cert = keyStore.getCertificate(keyName);
             publicKey = cert.getPublicKey();
             privateKey = privateKeyEntry.getPrivateKey();
-            kid = new PkiUtils().calcKid((X509Certificate) cert);
+            CertificateUtils certificateUtils = new CertificateUtils();
+            String kidBase64 = certificateUtils.getCertKid((X509Certificate) cert);
+            kid = Base64.getDecoder().decode(kidBase64);
+            log.info("cert key loaded kid (base64): '"+getKidAsBase64()+ "' algid: "+getAlgId());
         }
     }
 

@@ -21,6 +21,7 @@
 package eu.europa.ec.dgc.issuance.config;
 
 import eu.europa.ec.dgc.issuance.restapi.dto.ProblemReportDto;
+import eu.europa.ec.dgc.issuance.service.DGCINotFound;
 import javax.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,16 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
             .status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_JSON)
             .body(new ProblemReportDto("", "Validation Error", "", e.getMessage()));
+    }
+
+
+    @ExceptionHandler(DGCINotFound.class)
+    public ResponseEntity<ProblemReportDto> handleException(DGCINotFound e) {
+        log.error(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ProblemReportDto("", "DGCI not found", "", e.getMessage()));
     }
 
     /**

@@ -10,4 +10,5 @@ public class DgciIdentifier {
     private String dgci;
     private String kid;
     private int algId;
+    private String countryCode;
 }
