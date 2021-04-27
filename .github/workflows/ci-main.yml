@@ -16,12 +16,7 @@ jobs:
           distribution: 'adopt'
       - uses: s4u/maven-settings-action@v2.4.0
         with:
-          servers: |
-            [{
-                "id": "dgc-github",
-                "username": "abc",
-                "password": "abc"
-            }]
+          servers: '[{"id": "serverId", "username": "username", "password": "password"}]'
       - name: Build
         run: mvn install
       - name: Build for Docker Image
