@@ -6,6 +6,7 @@ import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import eu.europa.ec.dgc.issuance.service.DgciService;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +25,12 @@ public class DgciController {
     private final DgciService dgciService;
 
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DgciIdentifier> initDgci(@RequestBody DgciInit dgciInit) {
+    public ResponseEntity<DgciIdentifier> initDgci(@Valid @RequestBody DgciInit dgciInit) {
         return ResponseEntity.ok(dgciService.initDgci(dgciInit));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @RequestBody IssueData issueData)
+    public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @Valid @RequestBody IssueData issueData)
             throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
     }
