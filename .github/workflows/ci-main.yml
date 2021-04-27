@@ -1,10 +1,8 @@
-name: ci-pull-request
+name: CI Main Branch
 on:
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+  push:
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,5 +30,13 @@ jobs:
                 "password": "${{ secrets.GITHUB_PAT }}"
               }
             ]
-      - name: Build package
-        run: mvn --batch-mode package
+      - name: Build
+        run: mvn install
+      - name: Build for Docker Image
+        run: mvn clean install -P docker
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+      - name: Build Docker Image
+        run: docker build target/docker --file target/docker/Dockerfile --tag docker.pkg.github.com/${{ github.repository }}/backend:latest
+      - name: Push Docker Image
+        run: docker push docker.pkg.github.com/${{ github.repository }}/backend:latest
