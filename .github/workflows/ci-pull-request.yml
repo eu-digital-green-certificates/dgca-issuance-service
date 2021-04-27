@@ -1,0 +1,36 @@
+name: ci-pull-request
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - uses: s4u/maven-settings-action@v2
+        with:
+          githubServer: false
+          servers: |
+            [
+              {
+                "id": "dgc-github",
+                "username": "${{ secrets.GPR_USER }}",
+                "password": "${{ secrets.GPR_PAT }}"
+              },
+              {
+                "id": "ehd-github",
+                "username": "${{ secrets.GPR_USER }}",
+                "password": "${{ secrets.GPR_PAT }}"
+              }
+            ]
+      - name: Build package
+        run: mvn --batch-mode package
