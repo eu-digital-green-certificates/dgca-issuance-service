@@ -14,22 +14,14 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      - uses: s4u/maven-settings-action@v2
+      - uses: s4u/maven-settings-action@v2.4.0
         with:
-          githubServer: false
           servers: |
-            [
-              {
+            [{
                 "id": "dgc-github",
                 "username": "${{ secrets.GPR_USER }}",
                 "password": "${{ secrets.GPR_PAT }}"
-              },
-              {
-                "id": "ehd-github",
-                "username": "${{ secrets.GPR_USER }}",
-                "password": "${{ secrets.GPR_PAT }}"
-              }
-            ]
+            }]
       - name: Build
         run: mvn install
       - name: Build for Docker Image
