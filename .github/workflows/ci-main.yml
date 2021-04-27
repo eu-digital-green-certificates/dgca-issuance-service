@@ -21,13 +21,13 @@ jobs:
             [
               {
                 "id": "dgc-github",
-                "username": "${{ secrets.GITHUB_USER }}",
-                "password": "${{ secrets.GITHUB_PAT }}"
+                "username": "${{ secrets.GPR_USER }}",
+                "password": "${{ secrets.GPR_PAT }}"
               },
               {
                 "id": "ehd-github",
-                "username": "${{ secrets.GITHUB_USER }}",
-                "password": "${{ secrets.GITHUB_PAT }}"
+                "username": "${{ secrets.GPR_USER }}",
+                "password": "${{ secrets.GPR_PAT }}"
               }
             ]
       - name: Build
