@@ -14,7 +14,7 @@ issuance:
   keyStorePassword: dgca
   certAlias: edgc_dev_test
   privateKeyPassword: dgca
-  coutryCode: DE
+  countryCode: DE
 dgc:
   trustAnchor:
     keyStorePath: classpath:keystore/dgc-ta.jks

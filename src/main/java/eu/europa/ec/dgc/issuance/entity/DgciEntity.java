@@ -40,6 +40,9 @@ public class DgciEntity {
     @Column(name = "retry_coutner")
     private int retryCounter;
 
+    @Column(length=1024)
+    private String publicKey;
+
     @Column
     private boolean revoked;
 

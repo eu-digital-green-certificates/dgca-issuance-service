@@ -19,12 +19,12 @@ public class WalletController {
     private final DgciService dgciService;
 
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClaimResponse> claimUpdate(@RequestBody ClaimRequest claimRequest) {
+    public ResponseEntity<ClaimResponse> claimUpdate(@RequestBody ClaimRequest claimRequest) throws Exception {
         return ResponseEntity.ok(dgciService.claimUpdate(claimRequest));
     }
 
     @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClaimResponse> claim(@RequestBody ClaimRequest claimRequest) {
+    public ResponseEntity<ClaimResponse> claim(@RequestBody ClaimRequest claimRequest) throws Exception {
         return ResponseEntity.ok(dgciService.claim(claimRequest));
     }
 

@@ -23,7 +23,7 @@ management:
   server:
     port: -1
 issuance:
-  dgciPrefix:
+  dgciPrefix: "did:web:authority:dgci:V1:DE:blabla:"
 dgc:
   trustAnchor:
     keyStorePath: /ec/prod/app/san/dgc/dgc-ta.jks

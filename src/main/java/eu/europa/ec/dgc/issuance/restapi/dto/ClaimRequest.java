@@ -12,4 +12,5 @@ public class ClaimRequest {
     @JsonProperty("TANHash")
     private String tanHash;
     private PublicKey publicKey;
+    private String signature;
 }
