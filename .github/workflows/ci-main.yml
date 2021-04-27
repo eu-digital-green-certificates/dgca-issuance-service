@@ -19,8 +19,8 @@ jobs:
           servers: |
             [{
                 "id": "dgc-github",
-                "username": "${{ secrets.GPR_USER }}",
-                "password": "${{ secrets.GPR_PAT }}"
+                "username": "abc",
+                "password": "abc"
             }]
       - name: Build
         run: mvn install
