@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="#about">About</a> •
   <a href="#development">Development</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#support-and-feedback">Support</a> •
@@ -17,17 +18,17 @@
   <a href="#licensing">Licensing</a>
 </p>
 
-- [ ] TODO
+## About
 
-## Status
+This repository contains the source code of the Digital Green Certificates Issuance Service.
 
-![ci](https://github.com/eu-digital-green-certificates/dgca-issuance-service/actions/workflows/ci-master.yml/badge.svg)
+The issuer backend is accessed by the [issuer web frontend](https://github.com/eu-digital-green-certificates/dgca-issuance-web) and the respective wallet apps ( [Android](https://github.com/eu-digital-green-certificates/dgca-wallet-app-android), [iOS](https://github.com/eu-digital-green-certificates/dgca-wallet-app-ios) ) of the same member state. The backend itself publishes its public keys to the [DGCG](https://github.com/eu-digital-green-certificates/dgc-gateway) where they can be distributed to other member states. Each member state hosts its own issuer backend. The main function of the backend is to provide services for creating and signing new green certificates. 
 
 ## Development
 
 ### Prerequisites
 
-- [ ] TODO
+- [ ] TODO: Describe prerequisites
 
 ### Build
 
@@ -35,21 +36,13 @@ Whether you cloned or downloaded the 'zipped' sources you will either find the s
 
 In either case open a terminal pointing to the directory you put the sources in. The local build process is described afterwards depending on the way you choose.
 
-#### XYZ (Maven, ...) based build
+#### XYZ (Maven, Docker ...) based build
 
-- [ ] TODO
-
-#### Build Docker Image
-
-- [ ] TODO
-
-#### API documentation  
-
-- [ ] TODO
+- [ ] TODO: Add instructions for different build types
 
 ## Documentation  
 
-- [ ] TODO
+- [ ] TODO: Link to documentation
 
 ## Support and feedback
 
