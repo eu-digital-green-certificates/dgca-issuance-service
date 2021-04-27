@@ -31,14 +31,14 @@ public class DgciController {
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @Valid @RequestBody IssueData issueData)
-            throws Exception {
+        throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
     }
 
     // Public API to get DID document of certification not needed in current architecture
     @GetMapping(value = "/V1/DE/{opaque}/{hash}")
     public ResponseEntity<DidDocument> getDidDocument(@PathVariable String opaque, String hash) {
-        return ResponseEntity.ok(dgciService.getDidDocument(opaque,hash));
+        return ResponseEntity.ok(dgciService.getDidDocument(opaque, hash));
     }
 
     @GetMapping(value = "/status")

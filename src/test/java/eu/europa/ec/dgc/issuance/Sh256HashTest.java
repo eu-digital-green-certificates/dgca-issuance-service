@@ -10,7 +10,7 @@ public class Sh256HashTest {
     public void testCreateSHA256Hash() throws Exception {
         final MessageDigest digest = MessageDigest.getInstance("SHA3-256");
         final byte[] hashbytes = digest.digest(
-                "some_data".getBytes(StandardCharsets.UTF_8));
+            "some_data".getBytes(StandardCharsets.UTF_8));
         System.out.println(Base64.getEncoder().encodeToString(hashbytes));
     }
 }

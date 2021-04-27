@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class PublicKey {
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     private String type;
     @NotBlank
-    @Size(max=512)
+    @Size(max = 512)
     private String value;
 }

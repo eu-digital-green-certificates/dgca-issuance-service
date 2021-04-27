@@ -21,7 +21,7 @@
 package eu.europa.ec.dgc.issuance.config;
 
 import eu.europa.ec.dgc.issuance.restapi.dto.ProblemReportDto;
-import eu.europa.ec.dgc.issuance.service.DGCINotFound;
+import eu.europa.ec.dgc.issuance.service.DgciNotFound;
 import eu.europa.ec.dgc.issuance.service.WrongRequest;
 import javax.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -60,36 +60,28 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
             .body(new ProblemReportDto("", "Validation Error", "", e.getMessage()));
     }
 
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        StringBuilder sb = new StringBuilder();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            sb.append(error.getObjectName()).append('.').append(fieldName).append(' ').append(errorMessage).append(", ");
-        });
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ProblemReportDto("", "Validation Error", "", sb.toString()));
-    }
-
-    @ExceptionHandler(DGCINotFound.class)
-    public ResponseEntity<ProblemReportDto> handleException(DGCINotFound e) {
+    /**
+     * Exception Handler to handle {@link DgciNotFound} Exceptions.
+     */
+    @ExceptionHandler(DgciNotFound.class)
+    public ResponseEntity<ProblemReportDto> handleException(DgciNotFound e) {
         log.error(e.getMessage());
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ProblemReportDto("", "DGCI not found", "", e.getMessage()));
+            .status(HttpStatus.NOT_FOUND)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ProblemReportDto("", "DGCI not found", "", e.getMessage()));
     }
 
+    /**
+     * Exception Handler to handle {@link WrongRequest} Exceptions.
+     */
     @ExceptionHandler(WrongRequest.class)
     public ResponseEntity<ProblemReportDto> handleException(WrongRequest e) {
         log.error(e.getMessage());
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ProblemReportDto("", "Wrong request", "", e.getMessage()));
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ProblemReportDto("", "Wrong request", "", e.getMessage()));
     }
 
     /**
@@ -112,5 +104,27 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new ProblemReportDto("0x500", "Internal Server Error", "", ""));
         }
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+        MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        StringBuilder sb = new StringBuilder();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+
+            sb
+                .append(error.getObjectName())
+                .append('.')
+                .append(fieldName)
+                .append(' ')
+                .append(errorMessage)
+                .append(", ");
+        });
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ProblemReportDto("", "Validation Error", "", sb.toString()));
     }
 }

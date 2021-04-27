@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-@JsonPropertyOrder({"@context","id","controller"})
+@JsonPropertyOrder({"@context", "id", "controller"})
 public class DidDocument {
     @JsonProperty("@context")
     private String context;

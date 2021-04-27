@@ -19,7 +19,7 @@ public class DgciEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false, unique = true)
     private String dgci;
 
     @Column(name = "timestamp_created", nullable = false)
@@ -40,7 +40,7 @@ public class DgciEntity {
     @Column(name = "retry_coutner")
     private int retryCounter;
 
-    @Column(length=1024)
+    @Column(length = 1024)
     private String publicKey;
 
     @Column

@@ -49,15 +49,23 @@ public class DgciService {
     public DgciIdentifier initDgci(DgciInit dgciInit) {
         DgciEntity dgciEntity = new DgciEntity();
         String dgci = generateDgci();
+
         dgciEntity.setDgci(dgci);
         dgciRepository.saveAndFlush(dgciEntity);
-        log.info("init dgci: "+dgci+ " id: "+dgciEntity.getId());
-        return new DgciIdentifier(dgciEntity.getId(), dgci, certificateService.getKidAsBase64(), certificateService.getAlgId(),issuanceConfigProperties.getCountryCode());
+
+        log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
+
+        return new DgciIdentifier(
+            dgciEntity.getId(),
+            dgci,
+            certificateService.getKidAsBase64(),
+            certificateService.getAlgorithmIdentifier(),
+            issuanceConfigProperties.getCountryCode());
     }
 
     @NotNull
     private String generateDgci() {
-        return issuanceConfigProperties.getDgciPrefix() + UUID.randomUUID().toString();
+        return issuanceConfigProperties.getDgciPrefix() + UUID.randomUUID();
     }
 
     /**
@@ -77,18 +85,19 @@ public class DgciService {
             dgciEntity.setGreenCertificateType(issueData.getGreenCertificateType());
             dgciEntity.setCertHash(signatureBase64);
             dgciRepository.saveAndFlush(dgciEntity);
-            log.info("signed for "+dgciId);
+            log.info("signed for " + dgciId);
             return new SignatureData(tan, signatureBase64);
         } else {
-            log.warn("can not find dgci with id "+dgciId);
-            throw new DGCINotFound("dgci with id "+dgciId+ " not found");
+            log.warn("can not find dgci with id " + dgciId);
+            throw new DgciNotFound("dgci with id " + dgciId + " not found");
         }
     }
 
     /**
      * get did document.
+     *
      * @param opaque opaque
-     * @param hash hash
+     * @param hash   hash
      * @return didDocument
      */
     public DidDocument getDidDocument(String opaque, String hash) {
@@ -110,6 +119,9 @@ public class DgciService {
         return didDocument;
     }
 
+    /**
+     * Currently not Implemented.
+     */
     public ClaimResponse claimUpdate(ClaimRequest claimRequest) {
         ClaimResponse claimResponse = new ClaimResponse();
         // TODO wallet claim post (update?)
@@ -117,7 +129,11 @@ public class DgciService {
         // return claimResponse;
     }
 
-    public ClaimResponse claim(ClaimRequest claimRequest) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, InvalidKeyException {
+    /**
+     TODO: Add Comment.
+     */
+    public ClaimResponse claim(ClaimRequest claimRequest)
+        throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, InvalidKeyException {
         if (!verifySignature(claimRequest)) {
             throw new WrongRequest("signature verification failed");
         }
@@ -134,19 +150,20 @@ public class DgciService {
                 throw new WrongRequest("already claimed");
             }
             dgciEntity.setClaimed(true);
-            dgciEntity.setRetryCounter(dgciEntity.getRetryCounter()+1);
+            dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
             dgciEntity.setPublicKey(claimRequest.getPublicKey().getValue());
             dgciEntity.setHashedTan(null);
         } else {
-            log.info("can not find dgci "+claimRequest.getDgci());
-            throw new DGCINotFound("can not find dgci: "+claimRequest.getDgci());
+            log.info("can not find dgci " + claimRequest.getDgci());
+            throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());
         }
         ClaimResponse claimResponse = new ClaimResponse();
 
         return claimResponse;
     }
 
-    private boolean verifySignature(ClaimRequest claimRequest) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException {
+    private boolean verifySignature(ClaimRequest claimRequest)
+        throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bos.write(claimRequest.getDgci().getBytes());
         bos.write(claimRequest.getTanHash().getBytes());

@@ -6,76 +6,89 @@ import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.util.Arrays;
 
-public class CopyDigest implements Digest
-{
-    private OpenByteArrayOutputStream bOut = new OpenByteArrayOutputStream();
-    private SHA256Digest sha256Digest = new SHA256Digest();
+public class CopyDigest implements Digest {
+    private final OpenByteArrayOutputStream binaryOut = new OpenByteArrayOutputStream();
+    private final SHA256Digest sha256Digest = new SHA256Digest();
     private boolean wasReset = false;
 
-    public String getAlgorithmName()
-    {
+    public String getAlgorithmName() {
         return "NULL";
     }
 
-    public int getDigestSize()
-    {
+    public int getDigestSize() {
         return 32;
     }
 
-    public void update(byte in)
-    {
+    /**
+     * Updates the Message Digest with one byte.
+     *
+     * @param in byte to update.
+     */
+    public void update(byte in) {
         if (wasReset) {
             sha256Digest.update(in);
         } else {
-            bOut.write(in);
+            binaryOut.write(in);
         }
     }
 
-    public void update(byte[] in, int inOff, int len)
-    {
+    /**
+     * Updates the Message Digest with a byte array.
+     *
+     * @param in     byte array to insert
+     * @param offset Offset
+     * @param length length
+     */
+    public void update(byte[] in, int offset, int length) {
         if (wasReset) {
-            sha256Digest.update(in,inOff,len);
+            sha256Digest.update(in, offset, length);
         } else {
-            bOut.write(in, inOff, len);
+            binaryOut.write(in, offset, length);
         }
     }
 
-    public int doFinal(byte[] out, int outOff)
-    {
+    /**
+     * close the digest, producing the final digest value. The doFinal
+     * call leaves the digest reset.
+     *
+     * @param out the array the digest is to be copied into.
+     * @param offset the offset into the out array the digest is to start at.
+     * @return size of output
+     */
+    public int doFinal(byte[] out, int offset) {
         if (wasReset) {
-            return sha256Digest.doFinal(out,outOff);
+            return sha256Digest.doFinal(out, offset);
         } else {
-            int size = bOut.size();
-            bOut.copy(out, outOff);
+            int size = binaryOut.size();
+            binaryOut.copy(out, offset);
             reset();
             return size;
         }
     }
 
-    public void reset()
-    {
+    /**
+     * Resets the Message Digest.
+     */
+    public void reset() {
         if (wasReset) {
             sha256Digest.reset();
         } else {
-            if (bOut.size()>0) {
+            if (binaryOut.size() > 0) {
                 wasReset = true;
-                bOut.reset();
+                binaryOut.reset();
             }
         }
     }
 
     private static class OpenByteArrayOutputStream
-            extends ByteArrayOutputStream
-    {
-        public void reset()
-        {
+        extends ByteArrayOutputStream {
+        public void reset() {
             super.reset();
 
             Arrays.clear(buf);
         }
 
-        void copy(byte[] out, int outOff)
-        {
+        void copy(byte[] out, int outOff) {
             System.arraycopy(buf, 0, out, outOff, this.size());
         }
     }

@@ -10,14 +10,14 @@ import lombok.Data;
 public class ClaimRequest {
     @JsonProperty("DGCI")
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     private String dgci;
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     @JsonProperty("certhash")
     private String certHash;
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     @JsonProperty("TANHash")
     private String tanHash;
     @NotNull

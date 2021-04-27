@@ -27,6 +27,7 @@ public class EhdCryptoService implements CryptoService {
 
     /**
      * the constructor.
+     *
      * @param certificateService certificateService
      */
     public EhdCryptoService(CertificateService certificateService) {
@@ -34,7 +35,7 @@ public class EhdCryptoService implements CryptoService {
         this.privateKey = certificateService.getPrivateKey();
         kid = certificateService.getKid();
         headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.RSA_PSS_256.AsCBOR()),
-                new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
+            new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
     }
 
     @Override
