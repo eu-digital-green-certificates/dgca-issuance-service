@@ -8,7 +8,7 @@ import org.junit.Test;
 public class Sh256HashTest {
     @Test
     public void testCreateSHA256Hash() throws Exception {
-        final MessageDigest digest = MessageDigest.getInstance("SHA3-256");
+        final MessageDigest digest = MessageDigest.getInstance("SHA-256");
         final byte[] hashbytes = digest.digest(
             "some_data".getBytes(StandardCharsets.UTF_8));
         System.out.println(Base64.getEncoder().encodeToString(hashbytes));

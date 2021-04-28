@@ -6,6 +6,9 @@ import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import eu.europa.ec.dgc.issuance.service.DgciService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -24,11 +27,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class DgciController {
     private final DgciService dgciService;
 
+    @Operation(
+            summary = "Creates new dgci",
+            description = "Creates new dgci and return meta data for certificate creation"
+    )
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DgciIdentifier> initDgci(@Valid @RequestBody DgciInit dgciInit) {
         return ResponseEntity.ok(dgciService.initDgci(dgciInit));
     }
 
+    @Operation(
+            summary = "calculate cose signature for edgc",
+            description = "calculate cose signature for given certificate hash, "
+                    + "generate TAN and update DGCI Registry database"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "signature created"),
+            @ApiResponse(responseCode = "404", description = "dgci with related id not found"),
+            @ApiResponse(responseCode = "400", description = "wrong issue data")})
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @Valid @RequestBody IssueData issueData)
         throws Exception {
@@ -41,6 +57,10 @@ public class DgciController {
         return ResponseEntity.ok(dgciService.getDidDocument(opaque, hash));
     }
 
+    @Operation(
+            summary = "Produce status message",
+            description = "Produce status message"
+    )
     @GetMapping(value = "/status")
     public ResponseEntity<String> hello() {
         return ResponseEntity.ok("fine");

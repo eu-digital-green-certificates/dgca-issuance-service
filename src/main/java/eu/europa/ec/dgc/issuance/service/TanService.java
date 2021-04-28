@@ -1,21 +1,65 @@
 package eu.europa.ec.dgc.issuance.service;
 
-import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class TanService {
-    public String generateNewTan() {
-        // TODO how generate new TAN
-        return UUID.randomUUID().toString();
+    private Random random = new SecureRandom();
+    private char[] charSet;
+    private static final int TAN_LENGHT = 8;
+
+    /**
+     * TODO comment.
+     */
+    public TanService() {
+        StringBuilder chars = new StringBuilder();
+        for (char i = '0'; i <= '9'; i++) {
+            chars.append(i);
+        }
+        for (char i = 'A'; i <= 'Z'; i++) {
+            if (i != 'I' && i != '0') {
+                chars.append(i);
+            }
+        }
+        charSet = chars.toString().toCharArray();
     }
 
+    /**
+     * TODO comment.
+     */
+    public String generateNewTan() {
+        long rnd = Math.abs(random.nextLong());
+        int radixLen = charSet.length;
+        StringBuilder tan = new StringBuilder();
+        while (tan.length() < TAN_LENGHT) {
+            if (rnd == 0) {
+                rnd = Math.abs(random.nextLong());
+                continue;
+            }
+            tan.append(charSet[(int) (rnd % radixLen)]);
+            rnd /= radixLen;
+        }
+        return tan.toString();
+    }
+
+    /**
+     * TODO comment.
+     */
     public String hashTan(String tan) {
-        // TODO make tan hash
-        return tan;
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hashBytes = digest.digest(tan.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

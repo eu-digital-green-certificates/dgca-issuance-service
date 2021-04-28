@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +38,7 @@ public class DgciService {
     private final TanService tanService;
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
+    private final DgciGenerator dgciGenerator;
 
     /**
      * init dbgi.
@@ -56,16 +56,16 @@ public class DgciService {
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
 
         return new DgciIdentifier(
-            dgciEntity.getId(),
-            dgci,
-            certificateService.getKidAsBase64(),
-            certificateService.getAlgorithmIdentifier(),
-            issuanceConfigProperties.getCountryCode());
+                dgciEntity.getId(),
+                dgci,
+                certificateService.getKidAsBase64(),
+                certificateService.getAlgorithmIdentifier(),
+                issuanceConfigProperties.getCountryCode());
     }
 
     @NotNull
     private String generateDgci() {
-        return issuanceConfigProperties.getDgciPrefix() + UUID.randomUUID();
+        return dgciGenerator.newDgci();
     }
 
     /**
@@ -130,10 +130,11 @@ public class DgciService {
     }
 
     /**
-     TODO: Add Comment.
+     * TODO: Add Comment.
      */
     public ClaimResponse claim(ClaimRequest claimRequest)
-        throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, InvalidKeyException {
+            throws IOException, NoSuchAlgorithmException, SignatureException,
+            InvalidKeySpecException, InvalidKeyException {
         if (!verifySignature(claimRequest)) {
             throw new WrongRequest("signature verification failed");
         }
@@ -163,7 +164,8 @@ public class DgciService {
     }
 
     private boolean verifySignature(ClaimRequest claimRequest)
-        throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException {
+            throws IOException, NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException, InvalidKeySpecException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bos.write(claimRequest.getDgci().getBytes());
         bos.write(claimRequest.getTanHash().getBytes());
