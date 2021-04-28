@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>${packaging.format}</packaging>
 
-  <name>dgc-issuance-service</name>
+  <name>dgca-issuance-service</name>
   <description>European Digital Green Certificate Issuance Service project.</description>
   <organization>
     <name>T-Systems International GmbH</name>
