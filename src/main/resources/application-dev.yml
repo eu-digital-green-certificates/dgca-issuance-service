@@ -10,7 +10,7 @@ springdoc:
   swagger-ui:
     path: /swagger
 issuance:
-  keyStoreFile: src/test/resources/cert_devtest_keystore.jks
+  keyStoreFile: test_certs/cert_devtest_keystore.jks
   keyStorePassword: dgca
   certAlias: edgc_dev_test
   privateKeyPassword: dgca

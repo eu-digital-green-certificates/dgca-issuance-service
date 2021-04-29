@@ -18,7 +18,7 @@
  * ---license-end
  */
 
-package eu.europa.ec.dgc.issuance.service;
+package eu.europa.ec.dgc.issuance.service.impl;
 
 
 import java.io.ByteArrayOutputStream;

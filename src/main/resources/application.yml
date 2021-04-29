@@ -7,11 +7,13 @@ spring:
   application:
     name: eu-digital-green-certificates-issuence
   datasource:
-    jndi-name: jdbc/dgc
+    jndi-name: false
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:dgc;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;
+    username: sa
+    password: ''
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-    hibernate:
-      ddl-auto: create
+    database-platform: org.hibernate.dialect.H2Dialect
   liquibase:
     enabled: false
     change-log: classpath:db/changelog.xml
@@ -24,6 +26,11 @@ management:
     port: -1
 issuance:
   dgciPrefix: "dgci:V1:DE"
+  keyStoreFile: test_certs/cert_devtest_keystore.jks
+  keyStorePassword: dgca
+  certAlias: edgc_dev_test
+  privateKeyPassword: dgca
+  countryCode: DE
 dgc:
   trustAnchor:
     keyStorePath: /ec/prod/app/san/dgc/dgc-ta.jks
