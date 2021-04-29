@@ -10,7 +10,7 @@ public interface SigningService {
      * signature
      * @param hash SHA256 hash of content
      * @param privateKey RSA or EC
-     * @return
+     * @return signature as raw byte array
      */
     byte[] signHash(byte[] hash, PrivateKey privateKey);
 }
