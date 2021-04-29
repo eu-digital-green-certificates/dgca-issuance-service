@@ -41,8 +41,8 @@ jobs:
         --define app.packages.username="${APP_PACKAGES_USERNAME}"
         --define app.packages.password="${APP_PACKAGES_PASSWORD}";
       env:
-        APP_PACKAGES_USERNAME: ${{ secrets.GPR_USER }}
-        APP_PACKAGES_PASSWORD: ${{ secrets.GPR_PAT }}
+        APP_PACKAGES_USERNAME: ${{ github.actor }}
+        APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: docker
       run: >-
         echo "${APP_PACKAGES_PASSWORD}" |
@@ -57,5 +57,5 @@ jobs:
         docker push "${APP_PACKAGES_URL}:${APP_VERSION}";
       env:
         APP_PACKAGES_URL: docker.pkg.github.com/${{ github.repository }}/container
-        APP_PACKAGES_USERNAME: ${{ secrets.GPR_USER }}
-        APP_PACKAGES_PASSWORD: ${{ secrets.GPR_PAT }}
+        APP_PACKAGES_USERNAME: ${{ github.actor }}
+        APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
