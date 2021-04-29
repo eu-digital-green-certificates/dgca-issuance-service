@@ -1,0 +1,20 @@
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+springdoc:
+  api-docs:
+    path: /api/docs
+    enabled: true
+  swagger-ui:
+    path: /swagger
+issuance:
+  keyStoreFile: src/test/resources/cert_devtest_keystore.jks
+  keyStorePassword: dgca
+  certAlias: edgc_dev_test
+  privateKeyPassword: dgca
+  countryCode: DE
+dgc:
+  trustAnchor:
+    keyStorePath: classpath:keystore/dgc-ta.jks
