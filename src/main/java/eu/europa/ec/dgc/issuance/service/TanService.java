@@ -32,10 +32,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class TanService {
-    private Random random = new SecureRandom();
-    private char[] charSet;
-    private static final int TAN_LENGHT = 8;
 
+    private final Random random = new SecureRandom();
+    private final char[] charSet;
+    private static final int TAN_LENGTH = 8;
+
+    /**
+     * Constructs TanService with Whitelist of allowed TAN-Chars.
+     */
     public TanService() {
         StringBuilder chars = new StringBuilder();
         for (char i = '0'; i <= '9'; i++) {
@@ -50,13 +54,16 @@ public class TanService {
     }
 
     /**
-     * TODO comment.
+     * Generates a new TAN.
+     * The TAN has a length of 8 characters. The generated TAN does not include letter I and O.
+     *
+     * @return TAN String.
      */
     public String generateNewTan() {
         long rnd = random.nextLong();
         int radixLen = charSet.length;
         StringBuilder tan = new StringBuilder();
-        while (tan.length() < TAN_LENGHT) {
+        while (tan.length() < TAN_LENGTH) {
             if (rnd == 0) {
                 rnd = random.nextLong();
                 continue;

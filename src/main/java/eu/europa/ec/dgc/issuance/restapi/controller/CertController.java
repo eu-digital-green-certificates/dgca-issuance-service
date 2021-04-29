@@ -66,6 +66,9 @@ public class CertController {
     private final CertificateService certificateService;
     private final EhdCryptoService ehdCryptoService;
 
+    /**
+     * Controller for creating Vaccination Certificate.
+     */
     @PostMapping(value = "create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChainResult> createVaccinationCertificate(@RequestBody Eudgc eudgc) {
         // Taken from https://github.com/ehn-digital-green-development/hcert-kotlin/blob/main/src/test/kotlin/ehn/techiop/hcert/kotlin/chain/CborProcessingChainTest.kt

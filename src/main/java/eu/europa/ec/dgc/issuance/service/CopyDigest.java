@@ -39,6 +39,11 @@ public class CopyDigest implements Digest {
         return 32;
     }
 
+    /**
+     * Updates the Message Digest with one byte.
+     *
+     * @param in byte to update.
+     */
     public void update(byte in) {
         if (wasReset) {
             sha256Digest.update(in);

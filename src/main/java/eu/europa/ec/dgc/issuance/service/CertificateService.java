@@ -74,6 +74,9 @@ public class CertificateService {
 
     // TODO refactor cert keystore to be configurable
 
+    /**
+     * PostConstruct method to load KeyStore for issuing certificates.
+     */
     @PostConstruct
     public void loadKeyStore() throws KeyStoreException, IOException,
         CertificateException, NoSuchAlgorithmException, UnrecoverableEntryException {

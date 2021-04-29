@@ -34,6 +34,11 @@ import org.springframework.stereotype.Component;
 public class DgciGenerator {
     private final IssuanceConfigProperties issuanceConfigProperties;
 
+    /**
+     * Generates a new DGCI.
+     *
+     * @return DGCI as String
+     */
     public String newDgci() {
         StringBuilder sb = new StringBuilder();
         sb.append(issuanceConfigProperties.getDgciPrefix()).append(':').append(UUID.randomUUID());

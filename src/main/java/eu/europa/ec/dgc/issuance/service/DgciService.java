@@ -64,8 +64,14 @@ public class DgciService {
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
     // one year in seconds
-    private static final long  EXPIRATION_PERIOD_SEC =  60 * 60 * 24 * 364L;
+    private static final long EXPIRATION_PERIOD_SEC = 60 * 60 * 24 * 364L;
 
+    /**
+     * Initializes new DGCI.
+     *
+     * @param dgciInit object with required parameters.
+     * @return DGCI Identifier.
+     */
     public DgciIdentifier initDgci(DgciInit dgciInit) {
         DgciEntity dgciEntity = new DgciEntity();
         String dgci = generateDgci();
@@ -77,12 +83,12 @@ public class DgciService {
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
 
         return new DgciIdentifier(
-                dgciEntity.getId(),
-                dgci,
-                certificateService.getKidAsBase64(),
-                certificateService.getAlgorithmIdentifier(),
-                issuanceConfigProperties.getCountryCode(),
-                expirationForType(dgciInit.getGreenCertificateType())
+            dgciEntity.getId(),
+            dgci,
+            certificateService.getKidAsBase64(),
+            certificateService.getAlgorithmIdentifier(),
+            issuanceConfigProperties.getCountryCode(),
+            expirationForType(dgciInit.getGreenCertificateType())
         );
     }
 
@@ -162,8 +168,8 @@ public class DgciService {
      * TODO: Add Comment.
      */
     public void claim(ClaimRequest claimRequest)
-            throws IOException, NoSuchAlgorithmException, SignatureException,
-            InvalidKeySpecException, InvalidKeyException {
+        throws IOException, NoSuchAlgorithmException, SignatureException,
+        InvalidKeySpecException, InvalidKeyException {
         if (!verifySignature(claimRequest)) {
             throw new WrongRequest("signature verification failed");
         }
@@ -188,17 +194,17 @@ public class DgciService {
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
             dgciEntity.setPublicKey(claimRequest.getPublicKey().getValue());
             dgciEntity.setHashedTan(null);
-            log.info("dgci {} claimed",dgciEntity.getDgci());
+            log.info("dgci {} claimed", dgciEntity.getDgci());
             dgciRepository.saveAndFlush(dgciEntity);
         } else {
-            log.info("can not find dgci {}",claimRequest.getDgci());
+            log.info("can not find dgci {}", claimRequest.getDgci());
             throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());
         }
     }
 
     private boolean verifySignature(ClaimRequest claimRequest)
-            throws IOException, NoSuchAlgorithmException, SignatureException,
-            InvalidKeyException, InvalidKeySpecException {
+        throws IOException, NoSuchAlgorithmException, SignatureException,
+        InvalidKeyException, InvalidKeySpecException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bos.write(claimRequest.getDgci().getBytes());
         bos.write(claimRequest.getTanHash().getBytes());

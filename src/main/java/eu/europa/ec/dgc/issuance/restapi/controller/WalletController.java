@@ -44,13 +44,13 @@ public class WalletController {
     private final DgciService dgciService;
 
     @Operation(
-            summary = "claim dgci",
-            description = "claim, assign dgci public key by TAN"
+        summary = "claim dgci",
+        description = "claim, assign dgci public key by TAN"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "successful claim"),
-            @ApiResponse(responseCode = "404", description = "dgci not found"),
-            @ApiResponse(responseCode = "400", description = "wrong claim data")})
+        @ApiResponse(responseCode = "204", description = "successful claim"),
+        @ApiResponse(responseCode = "404", description = "dgci not found"),
+        @ApiResponse(responseCode = "400", description = "wrong claim data")})
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> claimUpdate(@Valid @RequestBody ClaimRequest claimRequest) throws Exception {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
