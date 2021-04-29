@@ -6,8 +6,8 @@
 
   <groupId>eu.europa.ec.dgc</groupId>
   <artifactId>dgca-issuance-service</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>${packaging.format}</packaging>
+  <version>latest</version>
+  <packaging>jar</packaging>
 
   <name>dgca-issuance-service</name>
   <description>European Digital Green Certificate Issuance Service project.</description>
@@ -15,19 +15,7 @@
     <name>T-Systems International GmbH</name>
   </organization>
 
-  <repositories>
-    <repository>
-      <id>dgc-github</id>
-      <url>https://maven.pkg.github.com/${github.organization}/*</url>
-    </repository>
-    <repository>
-      <id>ehd-github</id>
-      <url>https://maven.pkg.github.com/ehn-digital-green-development/*</url>
-    </repository>
-  </repositories>
-
   <properties>
-    <packaging.format>jar</packaging.format>
     <!-- java -->
     <java.version>11</java.version>
     <maven.compiler.source>11</maven.compiler.source>
@@ -91,53 +79,23 @@
     <url>https://github.com/eu-digital-green-certificates/dgca-issuance-service</url>
   </scm>
 
-  <profiles>
-    <profile>
-      <id>docker</id>
-      <properties>
-        <build.profile.id>docker</build.profile.id>
-        <packaging.format>jar</packaging.format>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-              <outputDirectory>${project.build.directory}/docker</outputDirectory>
-              <classifier>exec</classifier>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-dockerfile</id>
-                <phase>validate</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/docker</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${project.basedir}/src/main/docker</directory>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                  <delimiters>
-                    <delimiter>${*}</delimiter>
-                    <delimiter>@</delimiter>
-                  </delimiters>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  <repositories>
+    <repository>
+      <id>dgc-github</id>
+      <url>https://maven.pkg.github.com/${github.organization}/*</url>
+    </repository>
+    <repository>
+      <id>ehd-github</id>
+      <url>https://maven.pkg.github.com/ehn-digital-green-development/*</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>dgc-github</id>
+      <url>https://maven.pkg.github.com/${github.organization}/${github.project}</url>
+    </repository>
+  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -178,18 +136,11 @@
     </dependencies>
   </dependencyManagement>
 
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/${github.organization}/${github.project}</url>
-    </repository>
-  </distributionManagement>
-
   <dependencies>
     <dependency>
       <groupId>eu.europa.ec.dgc</groupId>
       <artifactId>dgc-lib</artifactId>
-      <version>${project.version}</version>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
@@ -304,9 +255,21 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring.boot.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${plugin.checkstyle.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>8.41.1</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
@@ -352,7 +315,7 @@
         </configuration>
         <executions>
           <execution>
-            <id>validate</id>
+            <id>check</id>
             <phase>validate</phase>
             <goals>
               <goal>check</goal>
@@ -367,7 +330,6 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring.boot.version}</version>
         <executions>
           <execution>
             <goals>
@@ -381,8 +343,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <configLocation>codestyle/checkstyle.xml</configLocation>
-          <excludes>target/**/*</excludes>
+          <configLocation>./codestyle/checkstyle.xml</configLocation>
+          <excludes>./target/**/*</excludes>
           <encoding>UTF-8</encoding>
           <consoleOutput>true</consoleOutput>
           <failsOnError>true</failsOnError>
@@ -449,8 +411,6 @@
           <emptyLineAfterHeader>true</emptyLineAfterHeader>
         </configuration>
       </plugin>
-      
-
     </plugins>
   </build>
 
