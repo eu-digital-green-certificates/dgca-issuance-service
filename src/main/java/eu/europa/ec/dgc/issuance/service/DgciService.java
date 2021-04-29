@@ -44,7 +44,7 @@ public class DgciService {
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
     // one year in seconds
-    private static final long  EXPIRATION_PERIOD_SEC =  60 * 60 * 24 * 364;
+    private static final long  EXPIRATION_PERIOD_SEC =  60 * 60 * 24 * 364l;
 
     /**
      * init dbgi.
