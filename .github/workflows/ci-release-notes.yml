@@ -1,18 +1,39 @@
-name: ci-release-notes
+name: ci-sonar
 on:
-  release:
+  push:
+    branches:
+    - main
+  pull_request:
     types:
-      - created
+    - opened
+    - synchronize
+    - reopened
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  sonar:
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - name: release notes
-        run: |
-          TAG=${GITHUB_REF/refs\/tags\/}
-          npx github-release-notes release --override --tags ${TAG}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GREN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+    - uses: actions/setup-java@v2
+      with:
+        java-version: 11
+        distribution: adopt
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+        key: ${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+    - name: mvn
+      run: >-
+        mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        --batch-mode
+        --file ./pom.xml
+        --settings ./settings.xml
+        --define app.packages.username="${APP_PACKAGES_USERNAME}"
+        --define app.packages.password="${APP_PACKAGES_PASSWORD}";
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        APP_PACKAGES_USERNAME: ${{ github.actor }}
+        APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

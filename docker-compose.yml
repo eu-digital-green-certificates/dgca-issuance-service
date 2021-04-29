@@ -17,7 +17,7 @@ services:
   backend:
     build: .
     image: eu-digital-green-certificates/dgc-issuance-service
-    container_name: dgc-gateway-backend
+    container_name: dgc-issuance-service
     volumes:
       - ./certs:/ec/prod/app/san/dgc
     ports:
@@ -28,7 +28,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://dgc-issuance-service-mysql:3306/fg
       - SPRING_DATASOURCE_USERNAME=dgc_adm
       - SPRING_DATASOURCE_PASSWORD=admin
-      - efgs_dbencryption_password=aaaaaaaaaaaaaaaa
     depends_on:
       - mysql
     networks:
