@@ -1,6 +1,5 @@
 package eu.europa.ec.dgc.issuance.restapi.dto;
 
-import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.Data;
@@ -10,5 +9,4 @@ public class IssueData {
     @NotBlank
     @Size(max = 512)
     private String hash;
-    private GreenCertificateType greenCertificateType;
 }

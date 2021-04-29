@@ -36,15 +36,15 @@ public class TanService {
      * TODO comment.
      */
     public String generateNewTan() {
-        long rnd = Math.abs(random.nextLong());
+        long rnd = random.nextLong();
         int radixLen = charSet.length;
         StringBuilder tan = new StringBuilder();
         while (tan.length() < TAN_LENGHT) {
             if (rnd == 0) {
-                rnd = Math.abs(random.nextLong());
+                rnd = random.nextLong();
                 continue;
             }
-            tan.append(charSet[(int) (rnd % radixLen)]);
+            tan.append(charSet[Math.abs((int) (rnd % radixLen))]);
             rnd /= radixLen;
         }
         return tan.toString();

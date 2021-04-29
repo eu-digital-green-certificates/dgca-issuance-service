@@ -82,7 +82,7 @@ public class CopyDigest implements Digest {
 
     private static class OpenByteArrayOutputStream
         extends ByteArrayOutputStream {
-        public void reset() {
+        public synchronized void reset() {
             super.reset();
 
             Arrays.clear(buf);

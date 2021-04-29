@@ -2,6 +2,7 @@ package eu.europa.ec.dgc.issuance.service;
 
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
+import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import eu.europa.ec.dgc.issuance.repository.DgciRepository;
 import eu.europa.ec.dgc.issuance.restapi.dto.ClaimRequest;
 import eu.europa.ec.dgc.issuance.restapi.dto.ClaimResponse;
@@ -23,6 +24,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,10 @@ public class DgciService {
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
     private final DgciGenerator dgciGenerator;
+    private static final int MAX_CLAIM_RETRY_TAN = 3;
+
+    // one year in seconds
+    private static final long  EXPIRATION_PERIOD_SEC =  60 * 60 * 24 * 364;
 
     /**
      * init dbgi.
@@ -51,6 +57,7 @@ public class DgciService {
         String dgci = generateDgci();
 
         dgciEntity.setDgci(dgci);
+        dgciEntity.setGreenCertificateType(dgciInit.getGreenCertificateType());
         dgciRepository.saveAndFlush(dgciEntity);
 
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
@@ -60,7 +67,16 @@ public class DgciService {
                 dgci,
                 certificateService.getKidAsBase64(),
                 certificateService.getAlgorithmIdentifier(),
-                issuanceConfigProperties.getCountryCode());
+                issuanceConfigProperties.getCountryCode(),
+                expirationForType(dgciInit.getGreenCertificateType())
+        );
+    }
+
+    private long expirationForType(GreenCertificateType greenCertificateType) {
+        Date now = new Date();
+        long sec = now.getTime() / 1000;
+        // TODO compute expiration dependend on certificate type
+        return sec + EXPIRATION_PERIOD_SEC;
     }
 
     @NotNull
@@ -82,7 +98,6 @@ public class DgciService {
             String signatureBase64 = certificateService.signHash(issueData.getHash());
             String tan = tanService.generateNewTan();
             dgciEntity.setHashedTan(tanService.hashTan(tan));
-            dgciEntity.setGreenCertificateType(issueData.getGreenCertificateType());
             dgciEntity.setCertHash(signatureBase64);
             dgciRepository.saveAndFlush(dgciEntity);
             log.info("signed for " + dgciId);
@@ -132,7 +147,7 @@ public class DgciService {
     /**
      * TODO: Add Comment.
      */
-    public ClaimResponse claim(ClaimRequest claimRequest)
+    public void claim(ClaimRequest claimRequest)
             throws IOException, NoSuchAlgorithmException, SignatureException,
             InvalidKeySpecException, InvalidKeyException {
         if (!verifySignature(claimRequest)) {
@@ -141,26 +156,30 @@ public class DgciService {
         Optional<DgciEntity> dgciEntityOptional = dgciRepository.findByDgci(claimRequest.getDgci());
         if (dgciEntityOptional.isPresent()) {
             DgciEntity dgciEntity = dgciEntityOptional.get();
+            if (dgciEntity.isClaimed()) {
+                throw new WrongRequest("already claimed");
+            }
+            if (dgciEntity.getRetryCounter() > MAX_CLAIM_RETRY_TAN) {
+                throw new WrongRequest("claim max try exceeded");
+            }
             if (!dgciEntity.getCertHash().equals(claimRequest.getCertHash())) {
                 throw new WrongRequest("cert hash mismatch");
             }
             if (!dgciEntity.getHashedTan().equals(claimRequest.getTanHash())) {
+                dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
+                dgciRepository.saveAndFlush(dgciEntity);
                 throw new WrongRequest("tan mismatch");
-            }
-            if (dgciEntity.isClaimed()) {
-                throw new WrongRequest("already claimed");
             }
             dgciEntity.setClaimed(true);
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
             dgciEntity.setPublicKey(claimRequest.getPublicKey().getValue());
             dgciEntity.setHashedTan(null);
+            log.info("dgci {} claimed",dgciEntity.getDgci());
+            dgciRepository.saveAndFlush(dgciEntity);
         } else {
-            log.info("can not find dgci " + claimRequest.getDgci());
+            log.info("can not find dgci {}",claimRequest.getDgci());
             throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());
         }
-        ClaimResponse claimResponse = new ClaimResponse();
-
-        return claimResponse;
     }
 
     private boolean verifySignature(ClaimRequest claimRequest)
@@ -171,15 +190,13 @@ public class DgciService {
         bos.write(claimRequest.getTanHash().getBytes());
         byte[] keyBytes = Base64.getDecoder().decode(claimRequest.getPublicKey().getValue());
         bos.write(keyBytes);
-        // TODO type or types of tan signature of claim now SHA256WithRSA only
-        Signature signature = Signature.getInstance("SHA256WithRSA");
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
+        KeyFactory kf = KeyFactory.getInstance(claimRequest.getPublicKey().getType());
         PublicKey publicKey = kf.generatePublic(spec);
+        Signature signature = Signature.getInstance(claimRequest.getSigAlg());
         signature.initVerify(publicKey);
         signature.update(bos.toByteArray());
         byte[] sigBytes = Base64.getDecoder().decode(claimRequest.getSignature());
         return signature.verify(sigBytes);
-
     }
 }

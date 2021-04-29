@@ -11,4 +11,5 @@ public class DgciIdentifier {
     private String kid;
     private int algId;
     private String countryCode;
+    private long expired;
 }

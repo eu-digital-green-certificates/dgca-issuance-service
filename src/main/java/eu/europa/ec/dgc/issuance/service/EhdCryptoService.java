@@ -12,7 +12,6 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import kotlin.Pair;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -74,13 +73,11 @@ public class EhdCryptoService implements CryptoService {
         }
     }
 
-    @NotNull
     @Override
     public String exportCertificateAsPem() {
         return null;
     }
 
-    @NotNull
     @Override
     public String exportPrivateKeyAsPem() {
         return null;

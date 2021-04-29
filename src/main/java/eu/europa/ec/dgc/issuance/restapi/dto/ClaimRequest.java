@@ -23,5 +23,7 @@ public class ClaimRequest {
     @NotNull
     private PublicKey publicKey;
     @NotBlank
+    private String sigAlg;
+    @NotBlank
     private String signature;
 }
