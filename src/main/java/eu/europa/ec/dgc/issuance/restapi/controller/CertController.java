@@ -110,7 +110,7 @@ public class CertController {
 
         CBORObject map = CBORObject.NewMap();
         // TODO dev decode EGC, add support for EC validation
-        RSAPublicKey rsaPublicKey = (RSAPublicKey) certificateService.getCertficate().getPublicKey();
+        RSAPublicKey rsaPublicKey = (RSAPublicKey) certificateService.getPublicKey();
         map.set(KeyKeys.KeyType.AsCBOR(), KeyKeys.KeyType_RSA);
         map.set(KeyKeys.RSA_N.AsCBOR(), stripLeadingZero(rsaPublicKey.getModulus()));
         map.set(KeyKeys.RSA_E.AsCBOR(), stripLeadingZero(rsaPublicKey.getPublicExponent()));
