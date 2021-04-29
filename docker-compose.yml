@@ -25,7 +25,7 @@ services:
     environment:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=mysql
-      - SPRING_DATASOURCE_URL=jdbc:mysql://dgc-issuance-service-mysql:3306/fg
+      - SPRING_DATASOURCE_URL=jdbc:mysql://dgc-issuance-service-mysql:3306/dgc
       - SPRING_DATASOURCE_USERNAME=dgc_adm
       - SPRING_DATASOURCE_PASSWORD=admin
     depends_on:
@@ -33,7 +33,8 @@ services:
     networks:
       backend:
       persistence:
+    restart: unless-stopped
 
 networks:
-  persistence:
   backend:
+  persistence:
