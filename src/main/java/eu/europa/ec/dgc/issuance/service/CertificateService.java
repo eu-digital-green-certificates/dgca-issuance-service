@@ -67,7 +67,6 @@ import org.springframework.stereotype.Component;
 public class CertificateService {
     private final IssuanceConfigProperties issuanceConfigProperties;
 
-    private KeyStore certKeyStore;
     private PrivateKey privateKey;
     private PublicKey publicKey;
     private java.security.cert.Certificate cert;
