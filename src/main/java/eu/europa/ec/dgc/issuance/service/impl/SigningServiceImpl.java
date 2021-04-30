@@ -14,7 +14,6 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.PSSSigner;
-import org.bouncycastle.crypto.signers.StandardDSAEncoding;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.springframework.stereotype.Component;
@@ -60,6 +59,12 @@ public class SigningServiceImpl implements SigningService {
         ECDSASigner pssSigner = new ECDSASigner();
         pssSigner.init(true, keyparam);
         BigInteger[] result3BI = pssSigner.generateSignature(hash);
-        return StandardDSAEncoding.INSTANCE.encode(pssSigner.getOrder(), result3BI[0], result3BI[1]);
+        byte[] rArr = result3BI[0].toByteArray();
+        byte[] sArr = result3BI[1].toByteArray();
+        byte[] sig = new byte[64];
+        System.arraycopy(rArr, rArr.length==33 ? 1 : 0, sig, 0, 32);
+        System.arraycopy(sArr, sArr.length==33 ? 1 : 0, sig, 32, 32);
+
+        return sig;
     }
 }
