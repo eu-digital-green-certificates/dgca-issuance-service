@@ -410,6 +410,15 @@
           <trimHeaderLine>true</trimHeaderLine>
           <emptyLineAfterHeader>true</emptyLineAfterHeader>
         </configuration>
+        <executions>
+          <execution>
+            <id>download-licenses</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
