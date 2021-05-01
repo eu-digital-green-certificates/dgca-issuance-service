@@ -55,6 +55,6 @@ jobs:
         --tag "${APP_PACKAGES_URL}:${APP_VERSION}";
         docker push "${APP_PACKAGES_URL}:${APP_VERSION}";
       env:
-        APP_PACKAGES_URL: docker.pkg.github.com/${{ github.repository }}/container
+        APP_PACKAGES_URL: docker.pkg.github.com/${{ github.repository }}/dgca-issuance-service
         APP_PACKAGES_USERNAME: ${{ github.actor }}
         APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

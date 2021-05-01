@@ -56,6 +56,14 @@ jobs:
         docker push "${APP_PACKAGES_URL}:latest";
         docker push "${APP_PACKAGES_URL}:${APP_VERSION}";
       env:
-        APP_PACKAGES_URL: docker.pkg.github.com/${{ github.repository }}/container
+        APP_PACKAGES_URL: docker.pkg.github.com/${{ github.repository }}/dgca-issuance-service
         APP_PACKAGES_USERNAME: ${{ github.actor }}
         APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    - name: assets
+      run: >-
+        gh release upload ${APP_TAG}
+        --clobber
+        ./target/openapi.json#openapi-${APP_TAG}.json
+        ./target/generated-resources/licenses.xml#licenses-${APP_TAG}.xml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
