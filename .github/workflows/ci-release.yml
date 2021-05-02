@@ -4,8 +4,10 @@ on:
     types:
     - created
 jobs:
-  release:
+  build:
     runs-on: ubuntu-20.04
+    env:
+      APP_VERSION: ${{ github.event.release.tag_name }}
     steps:
     - uses: actions/setup-java@v2
       with:
@@ -19,51 +21,59 @@ jobs:
         path: |
           ~/.m2/repository
         key: ${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-    - name: version
-      run: >-
-        APP_SHA=$(git rev-parse --short ${GITHUB_SHA});
-        APP_TAG=${GITHUB_REF/refs\/tags\/}
-        APP_VERSION=${APP_TAG};
-        echo "APP_SHA=${APP_SHA}" >> ${GITHUB_ENV};
-        echo "APP_TAG=${APP_TAG}" >> ${GITHUB_ENV};
-        echo "APP_VERSION=${APP_VERSION}" >> ${GITHUB_ENV};
     - name: mvn
-      run: >-
-        mvn versions:set
-        --batch-mode
-        --file ./pom.xml
-        --settings ./settings.xml
-        --define newVersion="${APP_VERSION}";
-        mvn clean deploy
-        --batch-mode
-        --file ./pom.xml
-        --settings ./settings.xml
-        --define app.packages.username="${APP_PACKAGES_USERNAME}"
-        --define app.packages.password="${APP_PACKAGES_PASSWORD}";
+      run: |-
+        mvn versions:set \
+        --batch-mode \
+        --file ./pom.xml \
+        --settings ./settings.xml \
+        --define newVersion="${APP_VERSION}"
+        mvn clean deploy \
+        --batch-mode \
+        --file ./pom.xml \
+        --settings ./settings.xml \
+        --define app.packages.username="${APP_PACKAGES_USERNAME}" \
+        --define app.packages.password="${APP_PACKAGES_PASSWORD}"
       env:
         APP_PACKAGES_USERNAME: ${{ github.actor }}
         APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: docker
-      run: >-
-        echo "${APP_PACKAGES_PASSWORD}" |
-        docker login "${APP_PACKAGES_URL}"
-        --username "${APP_PACKAGES_USERNAME}"
-        --password-stdin;
-        docker build .
-        --file ./Dockerfile
-        --tag "${APP_PACKAGES_URL}:latest"
-        --tag "${APP_PACKAGES_URL}:${APP_VERSION}";
-        docker push "${APP_PACKAGES_URL}:latest";
-        docker push "${APP_PACKAGES_URL}:${APP_VERSION}";
+      run: |-
+        echo "${APP_PACKAGES_PASSWORD}" | docker login "${APP_PACKAGES_URL}" \
+        --username "${APP_PACKAGES_USERNAME}" \
+        --password-stdin
+        docker build . \
+        --file ./Dockerfile \
+        --tag "${APP_PACKAGES_URL}:latest" \
+        --tag "${APP_PACKAGES_URL}:${APP_VERSION}"
+        docker push "${APP_PACKAGES_URL}:latest"
+        docker push "${APP_PACKAGES_URL}:${APP_VERSION}"
       env:
         APP_PACKAGES_URL: docker.pkg.github.com/${{ github.repository }}/dgca-issuance-service
         APP_PACKAGES_USERNAME: ${{ github.actor }}
         APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: assets
-      run: >-
-        gh release upload ${APP_TAG}
-        --clobber
-        ./target/openapi.json#openapi-${APP_TAG}.json
-        ./target/generated-resources/licenses.xml#licenses-${APP_TAG}.xml
+      run: |-
+        gh release upload ${APP_VERSION} \
+        --clobber \
+        ./target/openapi.json#openapi-${APP_VERSION}.json \
+        ./target/generated-resources/licenses.xml#licenses-${APP_VERSION}.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  deploy:
+    runs-on: ubuntu-20.04
+    needs:
+    - build
+    env:
+      APP_VERSION: ${{ github.event.release.tag_name }}
+    steps:
+    - name: cf setup
+      run: |-
+        curl -sL "https://packages.cloudfoundry.org/stable?release=${CF_RELEASE}&version=${CF_VERSION}" | \
+        sudo tar -zx -C /usr/local/bin
+      env:
+        CF_VERSION: 7.2.0
+        CF_RELEASE: linux64-binary
+    - name: cf push
+      run: |-
+        cf --version
