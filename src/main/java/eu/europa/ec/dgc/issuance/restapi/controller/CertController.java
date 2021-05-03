@@ -145,7 +145,7 @@ public class CertController {
 
         try {
             oneKey = new OneKey(map);
-            message = (Sign1Message) Sign1Message.DecodeFromBytes(cose);
+            message = (Sign1Message) COSE.Message.DecodeFromBytes(cose);
         } catch (CoseException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -218,7 +218,7 @@ public class CertController {
     }
 
     private CBORObject stripLeadingZero(BigInteger input) {
-        val bytes = input.toByteArray();
+        final byte[] bytes = input.toByteArray();
         byte[] stripped;
 
         if (bytes.length % 8 != 0 && bytes[0] == 0x00) {

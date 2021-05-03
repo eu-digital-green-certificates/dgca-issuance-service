@@ -29,7 +29,7 @@ public class SigningServiceImpl implements SigningService {
             } else {
                 signature = signEc(hashBytes, privateKey);
             }
-        } catch (CryptoException | IOException e) {
+        } catch (CryptoException e) {
             throw new IllegalArgumentException("error during signing ", e);
         }
         return signature;
@@ -50,7 +50,7 @@ public class SigningServiceImpl implements SigningService {
         return pssSigner.generateSignature();
     }
 
-    private byte[] signEc(byte[] hash, PrivateKey privateKey) throws IOException {
+    private byte[] signEc(byte[] hash, PrivateKey privateKey) {
         java.security.interfaces.ECPrivateKey privKey = (java.security.interfaces.ECPrivateKey) privateKey;
         ECParameterSpec s = EC5Util.convertSpec(privKey.getParams());
         ECPrivateKeyParameters keyparam = new ECPrivateKeyParameters(
