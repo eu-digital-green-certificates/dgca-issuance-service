@@ -20,6 +20,14 @@
 
 package eu.europa.ec.dgc.issuance.service;
 
+import ehn.techiop.hcert.data.Eudgc;
+import ehn.techiop.hcert.kotlin.chain.Chain;
+import ehn.techiop.hcert.kotlin.chain.ChainResult;
+import ehn.techiop.hcert.kotlin.chain.impl.DefaultBase45Service;
+import ehn.techiop.hcert.kotlin.chain.impl.DefaultCborService;
+import ehn.techiop.hcert.kotlin.chain.impl.DefaultCompressorService;
+import ehn.techiop.hcert.kotlin.chain.impl.DefaultContextIdentifierService;
+import ehn.techiop.hcert.kotlin.chain.impl.DefaultCoseService;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
@@ -30,6 +38,7 @@ import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
 import eu.europa.ec.dgc.issuance.restapi.dto.DidAuthentication;
 import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
+import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +51,8 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -49,6 +60,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +69,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DgciService {
     private final DgciRepository dgciRepository;
+    private final EhdCryptoService ehdCryptoService;
     private final TanService tanService;
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
@@ -64,6 +77,7 @@ public class DgciService {
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
     // one year in seconds
+    // TODO shift to spring configuration
     private static final long EXPIRATION_PERIOD_SEC = 60 * 60 * 24 * 364L;
 
     /**
@@ -218,5 +232,53 @@ public class DgciService {
         signature.update(bos.toByteArray());
         byte[] sigBytes = Base64.getDecoder().decode(claimRequest.getSignature());
         return signature.verify(sigBytes);
+    }
+
+    /**
+     * Create edgc in backend.
+     * @param eudgc certificate
+     * @return edgc qr code and tan
+     */
+    public EgdcCodeData createEdgc(Eudgc eudgc) {
+        String dgci = dgciGenerator.newDgci();
+        GreenCertificateType greenCertificateType = GreenCertificateType.Vaccination;
+        for (val v : eudgc.getR()) {
+            v.setCi(dgci);
+            greenCertificateType = GreenCertificateType.Recovery;
+        }
+        for (val v : eudgc.getT()) {
+            v.setCi(dgci);
+            greenCertificateType = GreenCertificateType.Test;
+        }
+        for (val v : eudgc.getV()) {
+            v.setCi(dgci);
+            greenCertificateType = GreenCertificateType.Vaccination;
+        }
+        val coseService = new DefaultCoseService(ehdCryptoService);
+        val contextIdentifierService = new DefaultContextIdentifierService();
+        val compressorService = new DefaultCompressorService();
+        val base45Service = new DefaultBase45Service();
+        val cborService = new DefaultCborService();
+        Chain cborProcessingChain =
+            new Chain(cborService, coseService,
+                contextIdentifierService, compressorService, base45Service);
+        ChainResult chainResult = cborProcessingChain.encode(eudgc);
+
+        EgdcCodeData egdcCodeData = new EgdcCodeData();
+        egdcCodeData.setQrcCode(chainResult.getStep5Prefixed());
+        egdcCodeData.setDgci(dgci);
+        String tan = tanService.generateNewTan();
+        egdcCodeData.setTan(tan);
+
+        DgciEntity dgciEntity = new DgciEntity();
+        dgciEntity.setDgci(dgci);
+        dgciEntity.setHashedTan(tanService.hashTan(tan));
+        dgciEntity.setGreenCertificateType(greenCertificateType);
+        dgciEntity.setCreatedAt(ZonedDateTime.now());
+        // TODO compute expiration time
+        dgciEntity.setExpires(ZonedDateTime.now().plus(EXPIRATION_PERIOD_SEC, ChronoUnit.SECONDS));
+        dgciRepository.saveAndFlush(dgciEntity);
+
+        return egdcCodeData;
     }
 }

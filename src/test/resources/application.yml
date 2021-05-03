@@ -9,10 +9,17 @@ spring:
   application:
     name: eu-digital-green-certificates-issuence
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:db/changelog.xml
   main:
     allow-bean-definition-overriding: true
+issuance:
+  dgciPrefix: "dgci:V1:DE"
+  keyStoreFile: test_certs/cert_devtest_keystore.jks
+  keyStorePassword: dgca
+  certAlias: edgc_dev_test
+  privateKeyPassword: dgca
+  countryCode: DE
 springdoc:
   api-docs:
     path: /api/docs

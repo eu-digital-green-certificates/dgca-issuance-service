@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upokecenter.cbor.CBORException;
 import com.upokecenter.cbor.CBORObject;
+import com.upokecenter.cbor.CBORType;
 import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.Base45Service;
 import ehn.techiop.hcert.kotlin.chain.Chain;
@@ -86,8 +87,8 @@ public class CertController {
         val base45Service = new DefaultBase45Service();
         val cborService = new DefaultCborService();
         Chain cborProcessingChain =
-                new Chain(cborService, coseService,
-                        contextIdentifierService, compressorService, base45Service);
+            new Chain(cborService, coseService,
+                contextIdentifierService, compressorService, base45Service);
         ChainResult chainResult = cborProcessingChain.encode(eudgc);
         return ResponseEntity.ok(chainResult);
     }
@@ -104,17 +105,18 @@ public class CertController {
 
     /**
      * decode edgc.
+     *
      * @param prefixedEncodedCompressedCose edgc
      * @return decode result
      * @throws IOException IOException
      */
     @Operation(
-            summary = "decode edgc",
-            description = "decode and validy edgc raw string, extract raw data of each decode stage"
+        summary = "decode edgc",
+        description = "decode and validy edgc raw string, extract raw data of each decode stage"
     )
     @PostMapping(value = "decodeEGC", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EgcDecodeResult> decodeEgCert(
-            @RequestBody String prefixedEncodedCompressedCose) throws IOException {
+        @RequestBody String prefixedEncodedCompressedCose) throws IOException {
         VerificationResult verificationResult = new VerificationResult();
         ContextIdentifierService contextIdentifierService = new DefaultContextIdentifierService();
         Base45Service base45Service = new DefaultBase45Service();
@@ -123,6 +125,7 @@ public class CertController {
         val compressedCose = base45Service.decode(plainInput, verificationResult);
 
         EgcDecodeResult egcDecodeResult = new EgcDecodeResult();
+        StringBuilder errorMessages = new StringBuilder();
         try {
             val cose = compressorService.decode(compressedCose, verificationResult);
             egcDecodeResult.setCoseHex(Hex.toHexString(cose));
@@ -138,9 +141,9 @@ public class CertController {
             } else {
                 ECPublicKey ecPublicKey = (ECPublicKey) certificateService.getPublicKey();
                 map.set(KeyKeys.KeyType.AsCBOR(), KeyKeys.KeyType_EC2);
-                map.set(KeyKeys.EC2_Curve.AsCBOR(),getEcCurve(ecPublicKey));
-                map.set(KeyKeys.EC2_X.AsCBOR(),stripLeadingZero(ecPublicKey.getW().getAffineX()));
-                map.set(KeyKeys.EC2_Y.AsCBOR(),stripLeadingZero(ecPublicKey.getW().getAffineY()));
+                map.set(KeyKeys.EC2_Curve.AsCBOR(), getEcCurve(ecPublicKey));
+                map.set(KeyKeys.EC2_X.AsCBOR(), stripLeadingZero(ecPublicKey.getW().getAffineX()));
+                map.set(KeyKeys.EC2_Y.AsCBOR(), stripLeadingZero(ecPublicKey.getW().getAffineY()));
                 oneKey = new OneKey(map);
             }
 
@@ -149,8 +152,8 @@ public class CertController {
                 egcDecodeResult.setValidated(message.validate(oneKey));
             } catch (CoseException coseException) {
                 egcDecodeResult.setErrorMessage("COSE Validation error: "
-                        + (coseException.getCause() != null
-                        ? coseException.getCause().getMessage() : coseException.getMessage()));
+                    + (coseException.getCause() != null
+                    ? coseException.getCause().getMessage() : coseException.getMessage()));
             }
 
             StringWriter stringWriter = new StringWriter();
@@ -172,13 +175,44 @@ public class CertController {
             CBORObject.WriteJSON(protectedHeader, bos);
             JsonNode coseProtectedJson = mapper.readTree(bos.toByteArray());
             egcDecodeResult.setCoseProtectedJson(coseProtectedJson);
+
+            if (certData.getType() == CBORType.Map) {
+                checkElemType(certData, 1, CBORType.TextString, errorMessages, "issuer");
+                checkElemType(certData, 6, CBORType.Integer, errorMessages, "issued at");
+                checkElemType(certData, 4, CBORType.Integer, errorMessages, "expiration");
+                CBORObject hcert = checkElemType(certData, -260, CBORType.Map, errorMessages, "hcert");
+                if (hcert != null) {
+                    CBORObject v1 = checkElemType(hcert, 1, CBORType.Map, errorMessages, "v1");
+                }
+            } else {
+                errorMessages.append("cose payload is not a Map");
+            }
         } catch (CBORException cborException) {
-            egcDecodeResult.setErrorMessage("CBOR decode exception: " + cborException.getMessage());
+            errorMessages.append("CBOR decode exception: ").append(cborException.getMessage());
         } catch (Exception exception) {
-            egcDecodeResult.setErrorMessage("Decode exception: " + exception.getMessage());
+            errorMessages.append("Decode exception: ").append(exception.getMessage());
+        }
+        if (errorMessages.length() > 0) {
+            egcDecodeResult.setErrorMessage(errorMessages.toString());
         }
 
         return ResponseEntity.ok(egcDecodeResult);
+    }
+
+    private CBORObject checkElemType(CBORObject certData, int key, CBORType valueType,
+        StringBuilder errorMessages, String objectName) {
+        CBORObject cborValue = certData.get(key);
+        if (cborValue == null) {
+            errorMessages.append("missing " + objectName + " key: " + key);
+            cborValue = null;
+        } else {
+            if (cborValue.getType() != valueType) {
+                errorMessages.append("wrong type of: " + objectName + " is: "
+                    + cborValue.getType() + " expected: " + valueType);
+                cborValue = null;
+            }
+        }
+        return cborValue;
     }
 
     /**
@@ -192,7 +226,7 @@ public class CertController {
         result.setKeyType(certificateService.getCertficate().getPublicKey().getAlgorithm());
         result.setPublicKeyFormat(certificateService.getCertficate().getPublicKey().getFormat());
         result.setPublicKeyEncoded(
-                Base64.getEncoder().encodeToString(certificateService.getCertficate().getPublicKey().getEncoded()));
+            Base64.getEncoder().encodeToString(certificateService.getCertficate().getPublicKey().getEncoded()));
 
         return ResponseEntity.ok(result);
     }

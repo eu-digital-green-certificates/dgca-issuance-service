@@ -20,9 +20,11 @@
 
 package eu.europa.ec.dgc.issuance.restapi.controller;
 
+import ehn.techiop.hcert.data.Eudgc;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
 import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
+import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import eu.europa.ec.dgc.issuance.service.DgciService;
@@ -47,6 +49,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DgciController {
     private final DgciService dgciService;
 
+
     @Operation(
         summary = "Creates new dgci",
         description = "Creates new dgci and return meta data for certificate creation"
@@ -69,6 +72,19 @@ public class DgciController {
     public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @Valid @RequestBody IssueData issueData)
         throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
+    }
+
+    @Operation(
+        summary = "create qr code of edgc",
+        description = "create edgc for given data"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "signed edgc qr code created"),
+        @ApiResponse(responseCode = "400", description = "wrong issue data")})
+    @PutMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EgdcCodeData> createEdgc(@Valid @RequestBody Eudgc eudgc) {
+        EgdcCodeData egdcCodeData = dgciService.createEdgc(eudgc);
+        return ResponseEntity.ok(egdcCodeData);
     }
 
     // Public API to get DID document of certification not needed in current architecture

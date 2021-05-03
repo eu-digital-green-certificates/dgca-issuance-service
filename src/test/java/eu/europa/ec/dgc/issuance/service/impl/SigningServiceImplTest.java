@@ -8,6 +8,7 @@ import COSE.OneKey;
 import COSE.Sign1Message;
 import com.upokecenter.cbor.CBORObject;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.Signature;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -64,8 +65,7 @@ public class SigningServiceImplTest {
         // Own Splitted Sign
         SigningServiceImpl signingService = new SigningServiceImpl();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashbytes = digest.digest(coseForSignBytes);
+        byte[] hashbytes = sha256(coseForSignBytes);
         byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
 
         CBORObject coseArray2 = CBORObject.NewArray();
@@ -108,8 +108,7 @@ public class SigningServiceImplTest {
 
         SigningServiceImpl signingService = new SigningServiceImpl();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashbytes = digest.digest(coseForSignBytes);
+        byte[] hashbytes = sha256(coseForSignBytes);
         byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
 
         CBORObject coseArray2 = CBORObject.NewArray();
@@ -122,6 +121,11 @@ public class SigningServiceImplTest {
         byte[] ownCoseSigned2 = coseObject2.EncodeToBytes();
 
         validataCoseBytes(ownCoseSigned2);
+    }
+
+    private byte[] sha256(byte[] coseForSignBytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return digest.digest(coseForSignBytes);
     }
 
 
