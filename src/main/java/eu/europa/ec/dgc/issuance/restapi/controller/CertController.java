@@ -149,8 +149,8 @@ public class CertController {
                 egcDecodeResult.setValidated(message.validate(oneKey));
             } catch (CoseException coseException) {
                 egcDecodeResult.setErrorMessage("COSE Validation error: "
-                        + coseException.getCause() != null
-                        ? coseException.getCause().getMessage() : coseException.getMessage());
+                        + (coseException.getCause() != null
+                        ? coseException.getCause().getMessage() : coseException.getMessage()));
             }
 
             StringWriter stringWriter = new StringWriter();
