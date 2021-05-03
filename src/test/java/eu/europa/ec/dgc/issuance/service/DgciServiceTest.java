@@ -9,6 +9,7 @@ import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import eu.europa.ec.dgc.issuance.repository.DgciRepository;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
+import eu.europa.ec.dgc.issuance.restapi.dto.EgcDecodeResult;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
@@ -33,6 +34,9 @@ public class DgciServiceTest {
 
     @Autowired
     public DgciRepository dgciRepository;
+
+    @Autowired
+    public EdgcValidator edgcValidator;
 
     @Test
     public void testDGCIInit() throws Exception {
@@ -72,6 +76,10 @@ public class DgciServiceTest {
         Optional<DgciEntity> dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertEquals(GreenCertificateType.Vaccination,dgciEnitiyOpt.get().getGreenCertificateType());
+
+        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrcCode());
+        assertTrue(decodeResult.isValidated());
+        assertNull(decodeResult.getErrorMessage());
 
     }
 

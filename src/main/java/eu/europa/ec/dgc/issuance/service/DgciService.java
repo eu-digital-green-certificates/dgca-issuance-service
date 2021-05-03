@@ -21,13 +21,13 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import ehn.techiop.hcert.data.Eudgc;
+import ehn.techiop.hcert.kotlin.chain.Base45Service;
+import ehn.techiop.hcert.kotlin.chain.CborService;
 import ehn.techiop.hcert.kotlin.chain.Chain;
 import ehn.techiop.hcert.kotlin.chain.ChainResult;
-import ehn.techiop.hcert.kotlin.chain.impl.DefaultBase45Service;
-import ehn.techiop.hcert.kotlin.chain.impl.DefaultCborService;
-import ehn.techiop.hcert.kotlin.chain.impl.DefaultCompressorService;
-import ehn.techiop.hcert.kotlin.chain.impl.DefaultContextIdentifierService;
-import ehn.techiop.hcert.kotlin.chain.impl.DefaultCoseService;
+import ehn.techiop.hcert.kotlin.chain.CompressorService;
+import ehn.techiop.hcert.kotlin.chain.ContextIdentifierService;
+import ehn.techiop.hcert.kotlin.chain.CoseService;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
@@ -74,6 +74,12 @@ public class DgciService {
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
     private final DgciGenerator dgciGenerator;
+    private final CborService cborService;
+    private final CoseService coseService;
+    private final ContextIdentifierService contextIdentifierService;
+    private final CompressorService compressorService;
+    private final Base45Service base45Service;
+
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
     // one year in seconds
@@ -96,21 +102,23 @@ public class DgciService {
 
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
 
+        Date now = new Date();
+        long sec = now.getTime() / 1000;
+        long expiration = sec + expirationForType(dgciInit.getGreenCertificateType());
+
         return new DgciIdentifier(
             dgciEntity.getId(),
             dgci,
             certificateService.getKidAsBase64(),
             certificateService.getAlgorithmIdentifier(),
             issuanceConfigProperties.getCountryCode(),
-            expirationForType(dgciInit.getGreenCertificateType())
+            expiration
         );
     }
 
     private long expirationForType(GreenCertificateType greenCertificateType) {
-        Date now = new Date();
-        long sec = now.getTime() / 1000;
-        // TODO compute expiration dependend on certificate type
-        return sec + EXPIRATION_PERIOD_SEC;
+        // TODO compute expiration dependend on certificate type and probably config
+        return EXPIRATION_PERIOD_SEC;
     }
 
     @NotNull
@@ -254,11 +262,6 @@ public class DgciService {
             v.setCi(dgci);
             greenCertificateType = GreenCertificateType.Vaccination;
         }
-        val coseService = new DefaultCoseService(ehdCryptoService);
-        val contextIdentifierService = new DefaultContextIdentifierService();
-        val compressorService = new DefaultCompressorService();
-        val base45Service = new DefaultBase45Service();
-        val cborService = new DefaultCborService();
         Chain cborProcessingChain =
             new Chain(cborService, coseService,
                 contextIdentifierService, compressorService, base45Service);
@@ -275,8 +278,7 @@ public class DgciService {
         dgciEntity.setHashedTan(tanService.hashTan(tan));
         dgciEntity.setGreenCertificateType(greenCertificateType);
         dgciEntity.setCreatedAt(ZonedDateTime.now());
-        // TODO compute expiration time
-        dgciEntity.setExpires(ZonedDateTime.now().plus(EXPIRATION_PERIOD_SEC, ChronoUnit.SECONDS));
+        dgciEntity.setExpires(ZonedDateTime.now().plus(expirationForType(greenCertificateType), ChronoUnit.SECONDS));
         dgciRepository.saveAndFlush(dgciEntity);
 
         return egdcCodeData;
