@@ -34,13 +34,6 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  */
 @SpringBootApplication
 @EnableConfigurationProperties({IssuanceConfigProperties.class})
-@OpenAPIDefinition(
-    info = @Info(
-        title = "Digital Green Certificate Issuance",
-        description = "The API defines Issuance Service for digital green certificates.",
-        license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0")
-    )
-)
 public class DgcIssuanceApplication extends SpringBootServletInitializer {
 
     /**
