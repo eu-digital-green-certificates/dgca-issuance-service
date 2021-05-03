@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class EdgcValidatorTest {
     @Autowired
-    public EdgcValidator edgcValidator;
+    EdgcValidator edgcValidator;
 
     @Test
     public void testValidateSamples() throws Exception {

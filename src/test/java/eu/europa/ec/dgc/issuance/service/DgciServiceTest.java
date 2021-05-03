@@ -27,16 +27,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 public class DgciServiceTest {
     @Autowired
-    public DgciService dgciService;
+    DgciService dgciService;
 
     @Autowired
-    public IssuanceConfigProperties issuanceConfigProperties;
+    IssuanceConfigProperties issuanceConfigProperties;
 
     @Autowired
-    public DgciRepository dgciRepository;
+    DgciRepository dgciRepository;
 
     @Autowired
-    public EdgcValidator edgcValidator;
+    EdgcValidator edgcValidator;
 
     @Test
     public void testDGCIInit() throws Exception {

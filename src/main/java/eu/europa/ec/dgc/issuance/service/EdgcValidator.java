@@ -2,6 +2,7 @@ package eu.europa.ec.dgc.issuance.service;
 
 import COSE.CoseException;
 import COSE.KeyKeys;
+import COSE.Message;
 import COSE.OneKey;
 import COSE.Sign1Message;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -57,9 +58,13 @@ public class EdgcValidator {
         try {
             val cose = compressorService.decode(compressedCose, verificationResult);
             egcDecodeResult.setCoseHex(Hex.toHexString(cose));
-            Sign1Message message = (Sign1Message) Sign1Message.DecodeFromBytes(cose);
-            validateSignature(egcDecodeResult, errorMessages, message);
-
+            Message message = Message.DecodeFromBytes(cose);
+            if ((message instanceof Sign1Message)) {
+                Sign1Message singn1Message = (Sign1Message)message;
+                validateSignature(egcDecodeResult, errorMessages, singn1Message);
+            } else {
+                errorMessages.append("not Sign1 cose message");
+            }
             StringWriter stringWriter = new StringWriter();
             cborDumpService.dumpCbor(message.GetContent(), stringWriter);
             egcDecodeResult.setCborDump(stringWriter.getBuffer().toString());
@@ -102,8 +107,7 @@ public class EdgcValidator {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         CBORObject.WriteJSON(cborObject, bos);
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode cborJson = mapper.readTree(bos.toByteArray());
-        return cborJson;
+        return mapper.readTree(bos.toByteArray());
     }
 
     private void validateCosePayload(StringBuilder errorMessages, CBORObject certData) {
@@ -113,7 +117,8 @@ public class EdgcValidator {
             checkElemType(certData, 4, CBORType.Integer, errorMessages, "expiration");
             CBORObject hcert = checkElemType(certData, -260, CBORType.Map, errorMessages, "hcert");
             if (hcert != null) {
-                CBORObject v1 = checkElemType(hcert, 1, CBORType.Map, errorMessages, "v1");
+                checkElemType(hcert, 1, CBORType.Map, errorMessages, "v1");
+                // CBORObject v1 = 
                 // TODO validate hcert v1 against schema
             }
         } else {
