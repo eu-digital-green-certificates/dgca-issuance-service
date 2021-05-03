@@ -23,8 +23,10 @@ package eu.europa.ec.dgc.issuance.utils;
 import com.upokecenter.cbor.CBORObject;
 import java.io.IOException;
 import java.io.Writer;
+import org.springframework.stereotype.Service;
 
-public class CborDump {
+@Service
+public class CborDumpService {
 
     public void dumpCbor(byte[] cb, Writer writer) throws IOException {
         CBORObject cborObject = CBORObject.DecodeFromBytes(cb);
