@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/dgci")
 @AllArgsConstructor
 public class DgciController {
+
     private final DgciService dgciService;
 
     @Operation(
