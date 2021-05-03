@@ -1,7 +1,6 @@
 package eu.europa.ec.dgc.issuance.service.impl;
 
 import eu.europa.ec.dgc.issuance.service.SigningService;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
