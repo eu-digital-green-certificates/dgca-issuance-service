@@ -29,7 +29,9 @@ The issuer backend is accessed by the [issuer web frontend](https://github.com/e
 
 ### Prerequisites
 
-- [ ] TODO: Describe prerequisites
+- [Open JDK 11](https://openjdk.java.net)
+- [Maven](https://maven.apache.org)
+- [Docker](https://www.docker.com)
 
 ### Build
 
@@ -37,9 +39,15 @@ Whether you cloned or downloaded the 'zipped' sources you will either find the s
 
 In either case open a terminal pointing to the directory you put the sources in. The local build process is described afterwards depending on the way you choose.
 
-#### XYZ (Maven, Docker ...) based build
+### Build with maven
+* Check [settings.xml](settings.xml) in root folder and copy the servers to your own `~/.m2/settings.xml` to connect the GitHub repositories we use in our code. Provide your GitHub username and access token (see [GitHub Help](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)) under the variables suggested. 
+* Run `mvn clean package` from the project root folder
 
-- [ ] TODO: Add instructions for different build types
+### Run with docker
+* Perform maven build as described above
+* Run `docker-compose up` from the project root folder
+
+After all containers have started you will be able to reach the application on your [local machine](http://localhost:8080/dgci/status) under port 8080.
 
 ## Documentation  
 
