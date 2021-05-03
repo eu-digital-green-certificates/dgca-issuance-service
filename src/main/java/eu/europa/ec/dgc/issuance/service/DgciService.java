@@ -20,6 +20,8 @@
 
 package eu.europa.ec.dgc.issuance.service;
 
+import com.upokecenter.cbor.CBORObject;
+import com.upokecenter.cbor.CBORType;
 import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.Base45Service;
 import ehn.techiop.hcert.kotlin.chain.CborService;
@@ -45,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -177,6 +180,29 @@ public class DgciService {
     }
 
     /**
+     * compute cose sign hash.
+     * @param coseMessage cose message
+     * @return hash value
+     */
+    public byte[] computeCoseSignHash(byte[] coseMessage)  {
+        try {
+            CBORObject coseForSign = CBORObject.NewArray();
+            CBORObject cborCose = CBORObject.DecodeFromBytes(coseMessage);
+            if (cborCose.getType() == CBORType.Array) {
+                coseForSign.Add(CBORObject.FromObject("Signature1"));
+                coseForSign.Add(cborCose.get(0).GetByteString());
+                coseForSign.Add(new byte[0]);
+                coseForSign.Add(cborCose.get(2).GetByteString());
+            }
+            byte[] coseForSignBytes = coseForSign.EncodeToBytes();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return digest.digest(coseForSignBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Currently not Implemented.
      */
     public ClaimResponse claimUpdate(ClaimRequest claimRequest) {
@@ -229,7 +255,7 @@ public class DgciService {
         InvalidKeyException, InvalidKeySpecException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bos.write(claimRequest.getDgci().getBytes());
-        bos.write(claimRequest.getTanHash().getBytes());
+        bos.write(Base64.getDecoder().decode(claimRequest.getTanHash()));
         byte[] keyBytes = Base64.getDecoder().decode(claimRequest.getPublicKey().getValue());
         bos.write(keyBytes);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
@@ -275,6 +301,7 @@ public class DgciService {
 
         DgciEntity dgciEntity = new DgciEntity();
         dgciEntity.setDgci(dgci);
+        dgciEntity.setCertHash(Base64.getEncoder().encodeToString(computeCoseSignHash(chainResult.getStep2Cose())));
         dgciEntity.setHashedTan(tanService.hashTan(tan));
         dgciEntity.setGreenCertificateType(greenCertificateType);
         dgciEntity.setCreatedAt(ZonedDateTime.now());

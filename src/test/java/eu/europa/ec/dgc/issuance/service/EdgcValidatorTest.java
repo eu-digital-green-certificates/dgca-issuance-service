@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
-public class EdgcValidatorTest {
+class EdgcValidatorTest {
     @Autowired
     EdgcValidator edgcValidator;
 
     @Test
-    public void testValidateSamples() throws Exception {
+    void testValidateSamples() throws Exception {
         String testData = "HC1:6BFOXN%TSMAHN-H/P8JU6+BS.5E9%UD82.7JJ59W2TT+FM*4/IQ0YVKQCPTHCV4*XUA2PWKP/HLIJL8JF8J" +
             "F7LPMIH-O92UQ7QQ%NH0LA5O6/UIGSU7QQ7NGWWBA 7.UIAYU3X3SH90THYZQ H9+W3.G8MSGPRAAUICO1DV59UE6Q1M650 LHZA0" +
             "D9E2LBHHGKLO-K%FGLIA5D8MJKQJK JMDJL9GG.IA.C8KRDL4O54O4IGUJKJGI.IAHLCV5GVWN.FKP123NJ%HBX/KR968X2-36/-K" +
@@ -27,7 +27,7 @@ public class EdgcValidatorTest {
     }
 
     @Test
-    public void testValidateAUSamples() throws Exception {
+    void testValidateAUSamples() throws Exception {
         String testData = "HC1:NCFOXN%TS3DHZN4HAF*PQFKKGTNA.Q/R8WRU2FCGJ9ZU6+9GNH5%DW+70ZMIN9HNO4*J8OX4W$C2VL*LA 4" +
             "3/IE%TE6UG+ZEAT1HQ13W1:O1YUI%F1PN1/T1J$HTR9/O14SI.J9DYHZROVZ05QNZ 20OP748$NI4L6RXKYQ8FRKBYOBM4T$7U-N0" +
             "O4RK43%JTXO$WOS%H*-VZIEQKERQ8IY1I$HH%U8 9PS5OH6*ZUFZFEPG:YN/P3JRH8LHGL2-LH/CJTK96L6SR9MU9DV5 R1:PI/E2" +

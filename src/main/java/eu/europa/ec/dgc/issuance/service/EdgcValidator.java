@@ -118,7 +118,7 @@ public class EdgcValidator {
             CBORObject hcert = checkElemType(certData, -260, CBORType.Map, errorMessages, "hcert");
             if (hcert != null) {
                 checkElemType(hcert, 1, CBORType.Map, errorMessages, "v1");
-                // CBORObject v1 = 
+                // CBORObject v1 =
                 // TODO validate hcert v1 against schema
             }
         } else {
