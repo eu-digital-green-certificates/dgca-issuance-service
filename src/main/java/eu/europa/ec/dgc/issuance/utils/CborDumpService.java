@@ -28,12 +28,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class CborDumpService {
 
+    /**
+     * Method to write a CBOR Array into a {@link Writer} (e.g. {@link java.io.StringWriter}).
+     *
+     * @param cb     cbor Byte Array to write
+     * @param writer destination
+     */
     public void dumpCbor(byte[] cb, Writer writer) throws IOException {
         CBORObject cborObject = CBORObject.DecodeFromBytes(cb);
-        dumpCbor(cborObject, writer, 0);
-    }
-
-    private void dumpCbor(CBORObject cborObject, Writer writer, int ident) throws IOException {
         writer
             .append("")
             .append(String.valueOf(cborObject));
