@@ -30,7 +30,7 @@ public class SigningServiceImpl implements SigningService {
                 signature = signEc(hashBytes, privateKey);
             }
         } catch (CryptoException | IOException e) {
-            throw new IllegalArgumentException("error during signing ",e);
+            throw new IllegalArgumentException("error during signing ", e);
         }
         return signature;
     }
@@ -59,11 +59,11 @@ public class SigningServiceImpl implements SigningService {
         ECDSASigner pssSigner = new ECDSASigner();
         pssSigner.init(true, keyparam);
         BigInteger[] result3BI = pssSigner.generateSignature(hash);
-        byte[] rArr = result3BI[0].toByteArray();
-        byte[] sArr = result3BI[1].toByteArray();
+        byte[] rvarArr = result3BI[0].toByteArray();
+        byte[] svarArr = result3BI[1].toByteArray();
         byte[] sig = new byte[64];
-        System.arraycopy(rArr, rArr.length==33 ? 1 : 0, sig, 0, 32);
-        System.arraycopy(sArr, sArr.length==33 ? 1 : 0, sig, 32, 32);
+        System.arraycopy(rvarArr, rvarArr.length == 33 ? 1 : 0, sig, 0, 32);
+        System.arraycopy(svarArr, svarArr.length == 33 ? 1 : 0, sig, 32, 32);
 
         return sig;
     }

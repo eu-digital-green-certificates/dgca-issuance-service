@@ -12,7 +12,7 @@ springdoc:
 issuance:
   keyStoreFile: test_certs/cert_devtest_keystore.jks
   keyStorePassword: dgca
-  certAlias: edgc_dev_test
+  certAlias: edgc_dev_ec
   privateKeyPassword: dgca
   countryCode: DE
 dgc:

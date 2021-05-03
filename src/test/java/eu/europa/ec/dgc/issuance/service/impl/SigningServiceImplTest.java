@@ -8,18 +8,24 @@ import COSE.OneKey;
 import COSE.Sign1Message;
 import com.upokecenter.cbor.CBORObject;
 import java.security.MessageDigest;
+import java.security.Security;
 import java.security.Signature;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SigningServiceImplTest {
+
+    private OneKey key;
+    private CBORObject payload;
+
     @Test
     public void testCompareCoseAndSplittedSignEC() throws Exception {
-        CBORObject payload = CBORObject.FromObject("Test");
+        payload = CBORObject.FromObject("Test");
         CBORObject kid = CBORObject.FromObject("kid".getBytes());
-        OneKey key = OneKey.generateKey(AlgorithmID.ECDSA_256);
+        key = OneKey.generateKey(AlgorithmID.ECDSA_256);
         Sign1Message sign1Message = new Sign1Message();
         sign1Message.SetContent(payload.EncodeToBytes());
         sign1Message.addAttribute(HeaderKeys.Algorithm, AlgorithmID.ECDSA_256.AsCBOR(), Attribute.PROTECTED);
@@ -27,14 +33,9 @@ public class SigningServiceImplTest {
         sign1Message.sign(key);
         byte[] coseSigned = sign1Message.EncodeToBytes();
 
-        Sign1Message messageDecoded = (Sign1Message) Sign1Message.DecodeFromBytes(coseSigned);
-        CBORObject payloadDecoded = CBORObject.DecodeFromBytes(messageDecoded.GetContent());
-        assertEquals(payloadDecoded.getType(),payload.getType());
-        assertEquals(payloadDecoded.AsString(),payload.AsString());
+        validataCoseBytes(coseSigned);
 
-        assertTrue(messageDecoded.validate(key));
-
-        // Own COSE Sign1
+        // Own COSE Sign1 with
 
         CBORObject protectedAttributes = CBORObject.NewMap();
         protectedAttributes.set(HeaderKeys.Algorithm.AsCBOR(),AlgorithmID.ECDSA_256.AsCBOR());
@@ -42,12 +43,7 @@ public class SigningServiceImplTest {
         byte[] protectedBytes = protectedAttributes.EncodeToBytes();
         byte[] cosePayload = payload.EncodeToBytes();
 
-        CBORObject coseForSign = CBORObject.NewArray();
-        coseForSign.Add(CBORObject.FromObject("Signature1"));
-        coseForSign.Add(protectedBytes);
-        coseForSign.Add(new byte[0]);
-        coseForSign.Add(cosePayload);
-        byte[] coseForSignBytes = coseForSign.EncodeToBytes();
+        byte[] coseForSignBytes = computeToSignValue(protectedBytes, cosePayload);
 
         Signature sig = Signature.getInstance("SHA256withECDSA");
         sig.initSign(key.AsPrivateKey());
@@ -63,19 +59,14 @@ public class SigningServiceImplTest {
         CBORObject coseObject = CBORObject.FromObjectAndTag(coseArray,18);
         byte[] ownCoseSigned = coseObject.EncodeToBytes();
 
-        Sign1Message messageDecodedOwn = (Sign1Message) Sign1Message.DecodeFromBytes(ownCoseSigned);
-        CBORObject payloadDecodedOwn = CBORObject.DecodeFromBytes(messageDecodedOwn.GetContent());
-        assertEquals(payloadDecodedOwn.getType(),payload.getType());
-        assertEquals(payloadDecodedOwn.AsString(),payload.AsString());
-
-        assertTrue("own sign failed",messageDecodedOwn.validate(key));
+        validataCoseBytes(ownCoseSigned);
 
         // Own Splitted Sign
         SigningServiceImpl signingService = new SigningServiceImpl();
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashbytes = digest.digest(coseForSignBytes);
-        byte[] signatureSplited = signingService.signHash(hashbytes,key.AsPrivateKey());
+        byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
 
         CBORObject coseArray2 = CBORObject.NewArray();
         coseArray2.Add(protectedBytes);
@@ -86,14 +77,74 @@ public class SigningServiceImplTest {
         CBORObject coseObject2 = CBORObject.FromObjectAndTag(coseArray2,18);
         byte[] ownCoseSigned2 = coseObject2.EncodeToBytes();
 
-        Sign1Message messageDecodedOwn2 = (Sign1Message) Sign1Message.DecodeFromBytes(ownCoseSigned2);
-        CBORObject payloadDecodedOwn2 = CBORObject.DecodeFromBytes(messageDecodedOwn2.GetContent());
-        assertEquals(payloadDecodedOwn2.getType(),payload.getType());
-        assertEquals(payloadDecodedOwn2.AsString(),payload.AsString());
-
-        assertTrue("own splitted sign failed",messageDecodedOwn2.validate(key));
+        validataCoseBytes(ownCoseSigned2);
     }
 
+    @Test
+    public void testCompareCoseAndSplittedSignRSA() throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
+        Security.setProperty("crypto.policy", "unlimited");
+
+        payload = CBORObject.FromObject("Test");
+        CBORObject kid = CBORObject.FromObject("kid".getBytes());
+        key = OneKey.generateKey(AlgorithmID.RSA_PSS_256);
+        Sign1Message sign1Message = new Sign1Message();
+        sign1Message.SetContent(payload.EncodeToBytes());
+        sign1Message.addAttribute(HeaderKeys.Algorithm, AlgorithmID.RSA_PSS_256.AsCBOR(), Attribute.PROTECTED);
+        sign1Message.addAttribute(HeaderKeys.KID, kid, Attribute.PROTECTED);
+        sign1Message.sign(key);
+        byte[] coseSigned = sign1Message.EncodeToBytes();
+
+        validataCoseBytes(coseSigned);
+
+        // Own splitted signing
+        CBORObject protectedAttributes = CBORObject.NewMap();
+        protectedAttributes.set(HeaderKeys.Algorithm.AsCBOR(),AlgorithmID.RSA_PSS_256.AsCBOR());
+        protectedAttributes.set(HeaderKeys.KID.AsCBOR(),kid);
+        byte[] protectedBytes = protectedAttributes.EncodeToBytes();
+        byte[] cosePayload = payload.EncodeToBytes();
+
+        byte[] coseForSignBytes = computeToSignValue(protectedBytes, cosePayload);
+
+        SigningServiceImpl signingService = new SigningServiceImpl();
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashbytes = digest.digest(coseForSignBytes);
+        byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
+
+        CBORObject coseArray2 = CBORObject.NewArray();
+        coseArray2.Add(protectedBytes);
+        coseArray2.Add(CBORObject.NewMap());
+        coseArray2.Add(cosePayload);
+        coseArray2.Add(signatureSplited);
+
+        CBORObject coseObject2 = CBORObject.FromObjectAndTag(coseArray2,18);
+        byte[] ownCoseSigned2 = coseObject2.EncodeToBytes();
+
+        validataCoseBytes(ownCoseSigned2);
+    }
+
+
+    private byte[] computeToSignValue(byte[] protectedBytes, byte[] cosePayload) {
+        CBORObject coseForSign = CBORObject.NewArray();
+        coseForSign.Add(CBORObject.FromObject("Signature1"));
+        coseForSign.Add(protectedBytes);
+        coseForSign.Add(new byte[0]);
+        coseForSign.Add(cosePayload);
+        byte[] coseForSignBytes = coseForSign.EncodeToBytes();
+        return coseForSignBytes;
+    }
+
+    private void validataCoseBytes(byte[] coseSigned) throws CoseException {
+        Sign1Message messageDecoded = (Sign1Message) Sign1Message.DecodeFromBytes(coseSigned);
+        CBORObject payloadDecoded = CBORObject.DecodeFromBytes(messageDecoded.GetContent());
+        assertEquals(payloadDecoded.getType(), payload.getType());
+        assertEquals(payloadDecoded.AsString(), payload.AsString());
+
+        assertTrue(messageDecoded.validate(key));
+    }
+
+    // code taken from COSE library
     private static byte[] convertDerToConcat(byte[] der, int len) throws CoseException {
         // this is far too naive
         byte[] concat = new byte[len * 2];
