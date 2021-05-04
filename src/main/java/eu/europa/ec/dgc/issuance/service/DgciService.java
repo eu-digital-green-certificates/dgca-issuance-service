@@ -156,8 +156,7 @@ public class DgciService {
     /**
      * get did document.
      *
-     * @param opaque opaque
-     * @param hash   hash
+     * @param hash hash
      * @return didDocument
      */
     public DidDocument getDidDocument(String hash) {

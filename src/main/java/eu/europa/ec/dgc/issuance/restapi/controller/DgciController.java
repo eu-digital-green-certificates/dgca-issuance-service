@@ -72,7 +72,8 @@ public class DgciController {
         @ApiResponse(responseCode = "400", description = "wrong issue data")})
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Deprecated
-    public ResponseEntity<SignatureData> finalizeDgciDepr(@PathVariable long id, @Valid @RequestBody IssueData issueData)
+    public ResponseEntity<SignatureData> finalizeDgciDepr(@PathVariable long id,
+                                                          @Valid @RequestBody IssueData issueData)
         throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
     }
