@@ -48,7 +48,7 @@ public class GerateWalletRequestTest {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bos.write(dgci.getBytes());
-        bos.write(tan.getBytes());
+        bos.write(tanHash);
         bos.write(publicKeyBytes);
 
         Signature signature = Signature.getInstance("SHA256WithRSA");
