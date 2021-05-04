@@ -82,7 +82,7 @@ jobs:
         cf target -o ${CF_ORG} -s ${CF_SPACE}
         cf push ${APP_NAME} --docker-image ${APP_IMAGE}:${APP_VERSION} --docker-username ${CF_DOCKER_USERNAME}
       env:
-        APP_NAME: dgca-issuance-web
+        APP_NAME: dgca-issuance-service
         APP_IMAGE: docker.pkg.github.com/${{ github.repository }}/dgca-issuance-service
         CF_API: ${{ secrets.CF_API }}
         CF_ORG: ${{ secrets.CF_ORG }}
