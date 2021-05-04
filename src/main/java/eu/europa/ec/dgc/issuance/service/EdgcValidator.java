@@ -119,7 +119,7 @@ public class EdgcValidator {
             if (hcert != null) {
                 checkElemType(hcert, 1, CBORType.Map, errorMessages, "v1");
                 // CBORObject v1 =
-                // TODO validate hcert v1 against schema
+                // TODO: validate hcert v1 against schema
             }
         } else {
             errorMessages.append("cose payload is not a Map");
