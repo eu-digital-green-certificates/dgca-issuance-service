@@ -1,4 +1,4 @@
-name: ci-release
+name: ci-deploy
 on:
   workflow_dispatch:
     inputs:
