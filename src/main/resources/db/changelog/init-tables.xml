@@ -18,9 +18,7 @@
       </column>
       <column name="expires_at" type="datetime"/>
       <column name="cert_hash" type="varchar(512)"/>
-      <column name="hashed_tan" type="varchar(512)">
-        <constraints unique="true"/>
-      </column>
+      <column name="hashed_tan" type="varchar(512)"/>
       <column name="green_certificate_type" type="varchar(255)"/>
       <column name="retry_counter" type="integer"/>
       <column name="public_key" type="varchar(1024)"/>

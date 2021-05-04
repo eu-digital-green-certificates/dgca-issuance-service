@@ -53,7 +53,7 @@ public class DgciEntity {
     @Column(name = "cert_hash", length = 512)
     private String certHash;
 
-    @Column(name = "hashed_tan", length = 512, unique = true)
+    @Column(name = "hashed_tan", length = 512)
     private String hashedTan;
 
     @Column(name = "green_certificate_type")
