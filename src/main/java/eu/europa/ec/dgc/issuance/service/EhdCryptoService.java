@@ -29,6 +29,7 @@ import ehn.techiop.hcert.kotlin.chain.CryptoService;
 import ehn.techiop.hcert.kotlin.chain.VerificationResult;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.util.Arrays;
 import java.util.List;
 import kotlin.Pair;
@@ -50,8 +51,13 @@ public class EhdCryptoService implements CryptoService {
         this.cert = certificateService.getCertficate();
         this.privateKey = certificateService.getPrivateKey();
         kid = certificateService.getKid();
-        headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.RSA_PSS_256.AsCBOR()),
-            new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
+        if (this.privateKey instanceof RSAPrivateCrtKey) {
+            headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.RSA_PSS_256.AsCBOR()),
+                new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
+        } else {
+            headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.ECDSA_256.AsCBOR()),
+                new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
+        }
     }
 
     @Override

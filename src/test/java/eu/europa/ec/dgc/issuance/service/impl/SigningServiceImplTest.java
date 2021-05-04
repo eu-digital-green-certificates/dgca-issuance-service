@@ -7,14 +7,15 @@ import COSE.HeaderKeys;
 import COSE.OneKey;
 import COSE.Sign1Message;
 import com.upokecenter.cbor.CBORObject;
+import com.upokecenter.cbor.CBORType;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.Signature;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SigningServiceImplTest {
 
@@ -64,8 +65,7 @@ public class SigningServiceImplTest {
         // Own Splitted Sign
         SigningServiceImpl signingService = new SigningServiceImpl();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashbytes = digest.digest(coseForSignBytes);
+        byte[] hashbytes = sha256(coseForSignBytes);
         byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
 
         CBORObject coseArray2 = CBORObject.NewArray();
@@ -95,6 +95,7 @@ public class SigningServiceImplTest {
         sign1Message.sign(key);
         byte[] coseSigned = sign1Message.EncodeToBytes();
 
+
         validataCoseBytes(coseSigned);
 
         // Own splitted signing
@@ -108,8 +109,7 @@ public class SigningServiceImplTest {
 
         SigningServiceImpl signingService = new SigningServiceImpl();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashbytes = digest.digest(coseForSignBytes);
+        byte[] hashbytes = sha256(coseForSignBytes);
         byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
 
         CBORObject coseArray2 = CBORObject.NewArray();
@@ -122,6 +122,15 @@ public class SigningServiceImplTest {
         byte[] ownCoseSigned2 = coseObject2.EncodeToBytes();
 
         validataCoseBytes(ownCoseSigned2);
+
+        byte[] bytesToSignFromCose = computeToSignValue(coseSigned);
+        assertArrayEquals(coseForSignBytes,bytesToSignFromCose);
+
+    }
+
+    private byte[] sha256(byte[] coseForSignBytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return digest.digest(coseForSignBytes);
     }
 
 
@@ -133,6 +142,18 @@ public class SigningServiceImplTest {
         coseForSign.Add(cosePayload);
         byte[] coseForSignBytes = coseForSign.EncodeToBytes();
         return coseForSignBytes;
+    }
+
+    public byte[] computeToSignValue(byte[] coseMessage) throws CoseException {
+        CBORObject coseForSign = CBORObject.NewArray();
+        CBORObject cborCose = CBORObject.DecodeFromBytes(coseMessage);
+        if (cborCose.getType()== CBORType.Array) {
+            coseForSign.Add(CBORObject.FromObject("Signature1"));
+            coseForSign.Add(cborCose.get(0).GetByteString());
+            coseForSign.Add(new byte[0]);
+            coseForSign.Add(cborCose.get(2).GetByteString());
+        }
+        return coseForSign.EncodeToBytes();
     }
 
     private void validataCoseBytes(byte[] coseSigned) throws CoseException {
