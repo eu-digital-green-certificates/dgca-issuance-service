@@ -55,14 +55,15 @@ public class SigningServiceImpl implements SigningService {
         ECPrivateKeyParameters keyparam = new ECPrivateKeyParameters(
                 privKey.getS(),
                 new ECDomainParameters(s.getCurve(), s.getG(), s.getN(), s.getH(), s.getSeed()));
-        ECDSASigner pssSigner = new ECDSASigner();
-        pssSigner.init(true, keyparam);
-        BigInteger[] result3BI = pssSigner.generateSignature(hash);
+        ECDSASigner ecdsaSigner = new ECDSASigner();
+        ecdsaSigner.init(true, keyparam);
+        BigInteger[] result3BI = ecdsaSigner.generateSignature(hash);
         byte[] rvarArr = result3BI[0].toByteArray();
         byte[] svarArr = result3BI[1].toByteArray();
+        // we need to convert it to 32 bytes array. This can 33 with leading 0 or shorter so padding is needed
         byte[] sig = new byte[64];
-        System.arraycopy(rvarArr, rvarArr.length == 33 ? 1 : 0, sig, 0, 32);
-        System.arraycopy(svarArr, svarArr.length == 33 ? 1 : 0, sig, 32, 32);
+        System.arraycopy(rvarArr, rvarArr.length == 33 ? 1 : 0, sig, Math.max(0,32-rvarArr.length), Math.min(32,rvarArr.length));
+        System.arraycopy(svarArr, svarArr.length == 33 ? 1 : 0, sig, 32+Math.max(0,32-svarArr.length), Math.min(32,svarArr.length));
 
         return sig;
     }
