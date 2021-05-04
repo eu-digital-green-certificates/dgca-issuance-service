@@ -1,5 +1,7 @@
 package eu.europa.ec.dgc.issuance.service;
 
+import COSE.ASN1;
+import COSE.CoseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.SampleData;
@@ -16,13 +18,20 @@ import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.PublicKey;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.Signature;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.crypto.signers.StandardDSAEncoding;
+import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +53,9 @@ class DgciServiceTest {
 
     @Autowired
     EdgcValidator edgcValidator;
+
+    @Autowired
+    CertificateService certificateService;
 
     @Test
     void testDGCIInit() throws Exception {
@@ -164,6 +176,40 @@ class DgciServiceTest {
         assertArrayEquals(certHash,certHashComputed);
 
 
+    }
+
+    @Test
+    void signFromHash() throws Exception {
+        String hash64 = "ZALr2hyVD4l5veh7+Auq78TQeS4PKOMAgVyy4GVSi9g=";
+        DgciInit dgciInit = new DgciInit();
+        dgciInit.setGreenCertificateType(GreenCertificateType.Vaccination);
+        DgciIdentifier dgciIdentifier = dgciService.initDgci(dgciInit);
+
+        java.security.interfaces.ECPublicKey pubKey = (java.security.interfaces.ECPublicKey) certificateService.getPublicKey();
+        AsymmetricKeyParameter keyParameter = ECUtil.generatePublicKeyParameter(pubKey);
+        ECDSASigner ecdsaSigner = new ECDSASigner();
+        ecdsaSigner.init(false, keyParameter);
+        StandardDSAEncoding standardDSAEncoding = new StandardDSAEncoding();
+
+        IssueData issueData = new IssueData();
+        // Try more time to get all possible byte paddings options
+        for (int i = 0;i<1000;i++) {
+            Random rnd = new Random();
+            byte[] hash = new byte[32];
+            rnd.nextBytes(hash);
+            hash64 = Base64.getEncoder().encodeToString(hash);
+            issueData.setHash(hash64);
+            SignatureData signatureData = dgciService.finishDgci(dgciIdentifier.getId(), issueData);
+            BigInteger[] sig = standardDSAEncoding.decode(ecdsaSigner.getOrder(), convertConcatToDer(Base64.getDecoder().decode(signatureData.getSignature())));
+            assertTrue(ecdsaSigner.verifySignature(hash,sig[0],sig[1]));
+        }
+    }
+
+    private static byte[] convertConcatToDer(byte[] concat) throws CoseException {
+        int len = concat.length / 2;
+        byte[] r = Arrays.copyOfRange(concat, 0, len);
+        byte[] s = Arrays.copyOfRange(concat, len, concat.length);
+        return ASN1.EncodeSignature(r, s);
     }
 
 

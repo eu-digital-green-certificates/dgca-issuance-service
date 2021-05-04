@@ -39,8 +39,8 @@ public class SigningServiceImpl implements SigningService {
         Digest mgfDigest = new SHA256Digest();
         RSAPrivateCrtKey k = (RSAPrivateCrtKey) privateKey;
         RSAPrivateCrtKeyParameters keyparam = new RSAPrivateCrtKeyParameters(k.getModulus(),
-                k.getPublicExponent(), k.getPrivateExponent(),
-                k.getPrimeP(), k.getPrimeQ(), k.getPrimeExponentP(), k.getPrimeExponentQ(), k.getCrtCoefficient());
+            k.getPublicExponent(), k.getPrivateExponent(),
+            k.getPrimeP(), k.getPrimeQ(), k.getPrimeExponentP(), k.getPrimeExponentQ(), k.getCrtCoefficient());
         RSABlindedEngine rsaBlindedEngine = new RSABlindedEngine();
         rsaBlindedEngine.init(true, keyparam);
         PSSSigner pssSigner = new PSSSigner(rsaBlindedEngine, contentDigest, mgfDigest, 32, (byte) (-68));
@@ -53,16 +53,19 @@ public class SigningServiceImpl implements SigningService {
         java.security.interfaces.ECPrivateKey privKey = (java.security.interfaces.ECPrivateKey) privateKey;
         ECParameterSpec s = EC5Util.convertSpec(privKey.getParams());
         ECPrivateKeyParameters keyparam = new ECPrivateKeyParameters(
-                privKey.getS(),
-                new ECDomainParameters(s.getCurve(), s.getG(), s.getN(), s.getH(), s.getSeed()));
-        ECDSASigner pssSigner = new ECDSASigner();
-        pssSigner.init(true, keyparam);
-        BigInteger[] result3BI = pssSigner.generateSignature(hash);
+            privKey.getS(),
+            new ECDomainParameters(s.getCurve(), s.getG(), s.getN(), s.getH(), s.getSeed()));
+        ECDSASigner ecdsaSigner = new ECDSASigner();
+        ecdsaSigner.init(true, keyparam);
+        BigInteger[] result3BI = ecdsaSigner.generateSignature(hash);
         byte[] rvarArr = result3BI[0].toByteArray();
         byte[] svarArr = result3BI[1].toByteArray();
+        // we need to convert it to 2*32 bytes array. This can 33 with leading 0 or shorter so padding is needed
         byte[] sig = new byte[64];
-        System.arraycopy(rvarArr, rvarArr.length == 33 ? 1 : 0, sig, 0, 32);
-        System.arraycopy(svarArr, svarArr.length == 33 ? 1 : 0, sig, 32, 32);
+        System.arraycopy(rvarArr, rvarArr.length == 33 ? 1 : 0, sig,
+            Math.max(0, 32 - rvarArr.length), Math.min(32, rvarArr.length));
+        System.arraycopy(svarArr, svarArr.length == 33 ? 1 : 0, sig,
+            32 + Math.max(0, 32 - svarArr.length), Math.min(32, svarArr.length));
 
         return sig;
     }
