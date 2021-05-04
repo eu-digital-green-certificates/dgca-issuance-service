@@ -86,7 +86,7 @@ public class DgciService {
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
     // one year in seconds
-    // TODO shift to spring configuration
+    // TODO: shift to spring configuration
     private static final long EXPIRATION_PERIOD_SEC = 60 * 60 * 24 * 364L;
 
     /**
