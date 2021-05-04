@@ -98,7 +98,7 @@ public class CertController {
      */
     @Operation(
         summary = "decode edgc",
-        description = "decode and validy edgc raw string, extract raw data of each decode stage"
+        description = "decode and validate edgc raw string, extract raw data of each decode stage"
     )
     @PostMapping(value = "decodeEGC", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EgcDecodeResult> decodeEgCert(
