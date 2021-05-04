@@ -89,5 +89,5 @@ jobs:
         CF_SPACE: ${{ secrets.CF_SPACE }}
         CF_USERNAME: ${{ secrets.CF_USERNAME }}
         CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
-        CF_DOCKER_USERNAME: ${{ github.actor }}
-        CF_DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        CF_DOCKER_USERNAME: ${{ secrets.CF_DOCKER_USERNAME }}
+        CF_DOCKER_PASSWORD: ${{ secrets.CF_DOCKER_PASSWORD }}
