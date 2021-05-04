@@ -23,15 +23,19 @@ package eu.europa.ec.dgc.issuance.utils;
 import com.upokecenter.cbor.CBORObject;
 import java.io.IOException;
 import java.io.Writer;
+import org.springframework.stereotype.Service;
 
-public class CborDump {
+@Service
+public class CborDumpService {
 
+    /**
+     * Method to write a CBOR Array into a {@link Writer} (e.g. {@link java.io.StringWriter}).
+     *
+     * @param cb     cbor Byte Array to write
+     * @param writer destination
+     */
     public void dumpCbor(byte[] cb, Writer writer) throws IOException {
         CBORObject cborObject = CBORObject.DecodeFromBytes(cb);
-        dumpCbor(cborObject, writer, 0);
-    }
-
-    private void dumpCbor(CBORObject cborObject, Writer writer, int ident) throws IOException {
         writer
             .append("")
             .append(String.valueOf(cborObject));

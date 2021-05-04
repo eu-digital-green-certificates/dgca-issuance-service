@@ -1,7 +1,6 @@
 package eu.europa.ec.dgc.issuance.service.impl;
 
 import eu.europa.ec.dgc.issuance.service.SigningService;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
@@ -14,7 +13,6 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.PSSSigner;
-import org.bouncycastle.crypto.signers.StandardDSAEncoding;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.springframework.stereotype.Component;
@@ -30,8 +28,8 @@ public class SigningServiceImpl implements SigningService {
             } else {
                 signature = signEc(hashBytes, privateKey);
             }
-        } catch (CryptoException | IOException e) {
-            throw new IllegalArgumentException("error during signing ",e);
+        } catch (CryptoException e) {
+            throw new IllegalArgumentException("error during signing ", e);
         }
         return signature;
     }
@@ -51,7 +49,7 @@ public class SigningServiceImpl implements SigningService {
         return pssSigner.generateSignature();
     }
 
-    private byte[] signEc(byte[] hash, PrivateKey privateKey) throws IOException {
+    private byte[] signEc(byte[] hash, PrivateKey privateKey) {
         java.security.interfaces.ECPrivateKey privKey = (java.security.interfaces.ECPrivateKey) privateKey;
         ECParameterSpec s = EC5Util.convertSpec(privKey.getParams());
         ECPrivateKeyParameters keyparam = new ECPrivateKeyParameters(
@@ -60,6 +58,12 @@ public class SigningServiceImpl implements SigningService {
         ECDSASigner pssSigner = new ECDSASigner();
         pssSigner.init(true, keyparam);
         BigInteger[] result3BI = pssSigner.generateSignature(hash);
-        return StandardDSAEncoding.INSTANCE.encode(pssSigner.getOrder(), result3BI[0], result3BI[1]);
+        byte[] rvarArr = result3BI[0].toByteArray();
+        byte[] svarArr = result3BI[1].toByteArray();
+        byte[] sig = new byte[64];
+        System.arraycopy(rvarArr, rvarArr.length == 33 ? 1 : 0, sig, 0, 32);
+        System.arraycopy(svarArr, svarArr.length == 33 ? 1 : 0, sig, 32, 32);
+
+        return sig;
     }
 }
