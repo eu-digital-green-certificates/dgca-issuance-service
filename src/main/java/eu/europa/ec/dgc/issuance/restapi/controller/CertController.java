@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Base64;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,9 +47,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * The endpoint here are not public API and should be used only for developing testing
+ * purposes.
+ * Only available for spring dev profile
+ */
 @RestController
 @RequestMapping("/cert")
 @AllArgsConstructor
+@Profile("dev")
 public class CertController {
 
     private final CertificateService certificateService;
@@ -63,6 +70,9 @@ public class CertController {
     /**
      * Controller for creating Vaccination Certificate.
      */
+    @Operation(
+        summary = "create edgc with process step informations, developing tool"
+    )
     @PostMapping(value = "create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChainResult> createVaccinationCertificate(@RequestBody Eudgc eudgc) {
         Chain cborProcessingChain =
@@ -76,6 +86,9 @@ public class CertController {
     /**
      * Rest Controller to decode CBOR.
      */
+    @Operation(
+        summary = "dump base64 cbor byte stream, developing tool"
+    )
     @PostMapping(value = "dumpCBOR", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> decodeCbor(@RequestBody String cbor) throws IOException {
         StringWriter stringWriter = new StringWriter();
@@ -95,7 +108,7 @@ public class CertController {
      * @throws IOException IOException
      */
     @Operation(
-        summary = "decode edgc",
+        summary = "decode edgc, developing tool",
         description = "decode and validate edgc raw string, extract raw data of each decode stage"
     )
     @PostMapping(value = "decodeEGC", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -110,6 +123,9 @@ public class CertController {
     /**
      * Rest Controller to get Public Key Information.
      */
+    @Operation(
+        summary = "get information about edgc public key, developing tool"
+    )
     @GetMapping(value = "publicKey")
     public ResponseEntity<PublicKeyInfo> getPublic() {
         PublicKeyInfo result = new PublicKeyInfo(
