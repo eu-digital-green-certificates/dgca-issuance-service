@@ -1,4 +1,4 @@
-spirng:
+spring:
   h2:
     console:
       enabled: false
@@ -9,8 +9,3 @@ spirng:
     password: postgres
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: validate
-liquibase:
-  enabled: true
-  change-log: classpath:db/changelog.yml

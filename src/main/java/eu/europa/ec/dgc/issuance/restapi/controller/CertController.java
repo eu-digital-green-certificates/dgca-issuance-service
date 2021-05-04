@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Base64;
 import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +49,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/cert")
 @AllArgsConstructor
-@Profile("dev")
 public class CertController {
 
     private final CertificateService certificateService;

@@ -240,6 +240,11 @@
       <artifactId>kotlin-stdlib-jdk8</artifactId>
       <version>1.4.31</version>
     </dependency>
+    <dependency>
+      <groupId>io.pivotal.cfenv</groupId>
+      <artifactId>java-cfenv-boot</artifactId>
+      <version>2.3.0</version>
+    </dependency>
   </dependencies>
 
   <build>

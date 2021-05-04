@@ -10,8 +10,9 @@ spring:
     password: ''
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: validate
   liquibase:
-    enabled: false
     change-log: classpath:db/changelog.xml
   h2:
     console:
@@ -29,6 +30,9 @@ management:
       base-path: /management
       exposure:
         include: info,health
+info:
+  name: ${spring.application.name}
+  profiles: ${spring.profiles.active}
 springdoc:
   api-docs:
     path: /api/docs
@@ -36,21 +40,9 @@ springdoc:
   swagger-ui:
     path: /swagger
 issuance:
-  dgciPrefix: "dgci:V1:DE"
-  keyStoreFile: test_certs/cert_devtest_keystore.jks
+  dgciPrefix: dgci:V1:DE
+  keyStoreFile: certs/test.jks
   keyStorePassword: dgca
   certAlias: edgc_dev_ec
   privateKeyPassword: dgca
   countryCode: DE
-dgc:
-  trustAnchor:
-    keyStorePath: classpath:keystore/dgc-ta.jks
-#dgc:
-#  trustAnchor:
-#    keyStorePath: /ec/prod/app/san/dgc/dgc-ta.jks
-    keyStorePass: dgc-p4ssw0rd
-    certificateAlias: dgc_trust_anchor
-  cert-auth:
-    header-fields:
-      thumbprint: X-SSL-Client-SHA256
-      distinguished-name: X-SSL-Client-DN
