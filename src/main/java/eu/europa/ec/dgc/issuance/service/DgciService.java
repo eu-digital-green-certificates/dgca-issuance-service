@@ -305,7 +305,7 @@ public class DgciService {
         dgciEntity.setHashedTan(tanService.hashTan(tan));
         dgciEntity.setGreenCertificateType(greenCertificateType);
         dgciEntity.setCreatedAt(ZonedDateTime.now());
-        dgciEntity.setExpires(ZonedDateTime.now().plus(expirationForType(greenCertificateType), ChronoUnit.SECONDS));
+        dgciEntity.setExpiresAt(ZonedDateTime.now().plus(expirationForType(greenCertificateType), ChronoUnit.SECONDS));
         dgciRepository.saveAndFlush(dgciEntity);
 
         return egdcCodeData;

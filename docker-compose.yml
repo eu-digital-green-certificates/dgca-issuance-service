@@ -1,16 +1,16 @@
 version: '3'
 
 services:
-  mysql:
-    image: mysql/mysql-server:5.7
-    container_name: dgc-issuance-service-mysql
+  postgres:
+    image: library/postgres:9.6
+    container_name: dgc-issuance-service-postgres
     ports:
-      - 3306:3306
+      - 5432:5432
     environment:
-      - MYSQL_DATABASE=dgc
-      - MYSQL_ROOT_PASSWORD=admin
-      - MYSQL_USER=dgc_adm
-      - MYSQL_PASSWORD=admin
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      restart: unless-stopped
     networks:
       persistence:
 
@@ -18,18 +18,16 @@ services:
     build: .
     image: eu-digital-green-certificates/dgc-issuance-service
     container_name: dgc-issuance-service
-    volumes:
-      - ./certs:/ec/prod/app/san/dgc
     ports:
       - 8080:8080
     environment:
       - SERVER_PORT=8080
-      - SPRING_PROFILES_ACTIVE=mysql
-      - SPRING_DATASOURCE_URL=jdbc:mysql://dgc-issuance-service-mysql:3306/dgc
-      - SPRING_DATASOURCE_USERNAME=dgc_adm
-      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_PROFILES_ACTIVE=cloud
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://dgc-issuance-service-postgres:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     depends_on:
-      - mysql
+      - postgres
     networks:
       backend:
       persistence:

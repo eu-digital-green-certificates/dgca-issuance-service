@@ -1,23 +1,20 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: 8080
 spring:
   profiles:
     active:
     - test
-    include:
-    - dev
   application:
-    name: eu-digital-green-certificates-issuence
+    name: dgca-issuance-service
   liquibase:
-    enabled: false
     change-log: classpath:db/changelog.xml
   main:
     allow-bean-definition-overriding: true
 issuance:
-  dgciPrefix: "dgci:V1:DE"
-  keyStoreFile: test_certs/cert_devtest_keystore.jks
+  dgciPrefix: dgci:V1:DE
+  keyStoreFile: certs/test.jks
   keyStorePassword: dgca
-  certAlias: edgc_dev_test
+  certAlias: edgc_dev_ec
   privateKeyPassword: dgca
   countryCode: DE
 springdoc:

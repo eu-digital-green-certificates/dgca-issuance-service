@@ -23,6 +23,8 @@ package eu.europa.ec.dgc.issuance.entity;
 import java.time.ZonedDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -35,40 +37,41 @@ import lombok.Data;
 public class DgciEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "dgci", nullable = false, unique = true)
     private String dgci;
 
-    @Column(name = "timestamp_created", nullable = false)
+    @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt = ZonedDateTime.now();
 
-    @Column
-    private ZonedDateTime expires;
+    @Column(name = "expires_at")
+    private ZonedDateTime expiresAt;
 
-    @Column(length = 512)
+    @Column(name = "cert_hash", length = 512)
     private String certHash;
 
-    @Column(length = 512, unique = true)
+    @Column(name = "hashed_tan", length = 512, unique = true)
     private String hashedTan;
 
-    @Column(name = "type")
+    @Column(name = "green_certificate_type")
+    @Enumerated(EnumType.STRING)
     private GreenCertificateType greenCertificateType;
 
-    @Column(name = "retry_coutner")
+    @Column(name = "retry_counter")
     private int retryCounter;
 
-    @Column(length = 1024)
+    @Column(name = "public_key", length = 1024)
     private String publicKey;
 
-    @Column
+    @Column(name = "revoked")
     private boolean revoked;
 
-    @Column
+    @Column(name = "claimed")
     private boolean claimed;
 
-    @Column
+    @Column(name = "locked")
     private boolean locked;
 }
