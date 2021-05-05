@@ -156,11 +156,10 @@ public class DgciService {
     /**
      * get did document.
      *
-     * @param opaque opaque
-     * @param hash   hash
+     * @param hash hash
      * @return didDocument
      */
-    public DidDocument getDidDocument(String opaque, String hash) {
+    public DidDocument getDidDocument(String hash) {
         DidDocument didDocument = new DidDocument();
         didDocument.setContext("https://w3id.org/did/v1");
         // TODO DID fake data

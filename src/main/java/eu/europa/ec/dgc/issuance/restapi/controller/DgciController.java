@@ -52,16 +52,17 @@ public class DgciController {
 
 
     @Operation(
-        summary = "Creates new dgci",
+        summary = "Creates new dgci (deprecated)",
         description = "Creates new dgci and return meta data for certificate creation"
     )
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DgciIdentifier> initDgci(@Valid @RequestBody DgciInit dgciInit) {
+    @Deprecated
+    public ResponseEntity<DgciIdentifier> initDgciDepr(@Valid @RequestBody DgciInit dgciInit) {
         return ResponseEntity.ok(dgciService.initDgci(dgciInit));
     }
 
     @Operation(
-        summary = "calculate cose signature for edgc",
+        summary = "calculate cose signature for edgc (deprecated)",
         description = "calculate cose signature for given certificate hash, "
             + "generate TAN and update DGCI Registry database"
     )
@@ -70,6 +71,32 @@ public class DgciController {
         @ApiResponse(responseCode = "404", description = "dgci with related id not found"),
         @ApiResponse(responseCode = "400", description = "wrong issue data")})
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Deprecated
+    public ResponseEntity<SignatureData> finalizeDgciDepr(@PathVariable long id,
+                                                          @Valid @RequestBody IssueData issueData)
+        throws Exception {
+        return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
+    }
+
+    @Operation(
+        summary = "Prepares an DGCI for the Code Generation in Frontend",
+        description = "Creates new dgci and return meta data for certificate creation"
+    )
+    @PostMapping(value = "/issue", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DgciIdentifier> initDgci(@Valid @RequestBody DgciInit dgciInit) {
+        return ResponseEntity.ok(dgciService.initDgci(dgciInit));
+    }
+
+    @Operation(
+        summary = "Completes the issuing process",
+        description = "calculate cose signature for given certificate hash, "
+            + "generate TAN and update DGCI Registry database"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "signature created"),
+        @ApiResponse(responseCode = "404", description = "dgci with related id not found"),
+        @ApiResponse(responseCode = "400", description = "wrong issue data")})
+    @PutMapping(value = "/issue/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @Valid @RequestBody IssueData issueData)
         throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
@@ -82,24 +109,27 @@ public class DgciController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "signed edgc qr code created"),
         @ApiResponse(responseCode = "400", description = "wrong issue data")})
-    @PutMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/issue", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EgdcCodeData> createEdgc(@Valid @RequestBody Eudgc eudgc) {
         EgdcCodeData egdcCodeData = dgciService.createEdgc(eudgc);
         return ResponseEntity.ok(egdcCodeData);
     }
 
-    // Public API to get DID document of certification not needed in current architecture
-    @GetMapping(value = "/V1/DE/{opaque}/{hash}")
+    @Operation(
+        summary = "Returns a DID document"
+    )
+    @GetMapping(value = "/{hash}")
     public ResponseEntity<DidDocument> getDidDocument(@PathVariable String opaque, String hash) {
-        return ResponseEntity.ok(dgciService.getDidDocument(opaque, hash));
+        return ResponseEntity.ok(dgciService.getDidDocument(hash));
     }
 
     @Operation(
-        summary = "Produce status message",
+        summary = "Checks the status of DGCI",
         description = "Produce status message"
     )
     @GetMapping(value = "/status")
-    public ResponseEntity<String> hello() {
+    public ResponseEntity<String> status() {
+        // not was not really specified what it is good for
         return ResponseEntity.ok("fine");
     }
 }
