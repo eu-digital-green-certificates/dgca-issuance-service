@@ -143,7 +143,7 @@ public class DgciService {
             String signatureBase64 = certificateService.signHash(issueData.getHash());
             String tan = tanService.generateNewTan();
             dgciEntity.setHashedTan(tanService.hashTan(tan));
-            dgciEntity.setCertHash(signatureBase64);
+            dgciEntity.setCertHash(issueData.getHash());
             dgciRepository.saveAndFlush(dgciEntity);
             log.info("signed for " + dgciId);
             return new SignatureData(tan, signatureBase64);
