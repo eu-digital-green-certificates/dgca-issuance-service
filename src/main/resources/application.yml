@@ -50,18 +50,18 @@ dgc:
   gateway:
     connector:
       enabled: false
-      endpoint: https://dgc-gateway.example.com
-      proxy:
-        enabled: false
-      max-cache-age: 300
-      tls-trust-store:
-        password: dgcg-p4ssw0rd
-        path: classpath:tls_trust_store.p12
-      tls-key-store:
-        alias: 1
-        password: dgcg-p4ssw0rd
-        path: classpath:tls_key_store.p12
-      trust-anchor:
-        alias: ta
-        password: dgcg-p4ssw0rd
-        path: classpath:trust_anchor.jks
+#      endpoint: https://dgc-gateway.example.com
+#      proxy:
+#        enabled: false
+#      max-cache-age: 300
+#      tls-trust-store:
+#        password: dgcg-p4ssw0rd
+#        path: classpath:tls_trust_store.p12
+#      tls-key-store:
+#        alias: 1
+#        password: dgcg-p4ssw0rd
+#        path: classpath:tls_key_store.p12
+#      trust-anchor:
+#        alias: ta
+#        password: dgcg-p4ssw0rd
+#        path: classpath:trust_anchor.jks
