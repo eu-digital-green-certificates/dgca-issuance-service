@@ -26,6 +26,11 @@ import eu.europa.ec.dgc.issuance.service.DgciService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -45,15 +50,16 @@ public class WalletController {
 
     @Operation(
         summary = "Claims the DGCI for a TAN and certificate Holder",
-        description = "claim, assign dgci public key by TAN"
+        description = "claim, check signatue, cert hash, TAN, assign dgci public key "
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "successful claim"),
         @ApiResponse(responseCode = "404", description = "dgci not found"),
         @ApiResponse(responseCode = "400", description = "wrong claim data")})
     @PostMapping(value = "/claim", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> claimUpdate(@Valid @RequestBody ClaimRequest claimRequest) {
-
+    public ResponseEntity<Void> claim(@Valid @RequestBody ClaimRequest claimRequest)
+        throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, InvalidKeyException {
+        dgciService.claim(claimRequest);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -61,8 +67,7 @@ public class WalletController {
         summary = "Claims the DGCI for a new TAN and certificate Holder"
     )
     @PatchMapping(value = "/claim", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClaimResponse> claim(@Valid @RequestBody ClaimRequest claimRequest) {
-
+    public ResponseEntity<ClaimResponse> claimUpdate(@Valid @RequestBody ClaimRequest claimRequest) {
         return ResponseEntity.ok(dgciService.claimUpdate(claimRequest));
     }
 
