@@ -52,7 +52,7 @@ public class DgciController {
 
 
     @Operation(
-        summary = "Creates new dgci (deprected)",
+        summary = "Creates new dgci (deprecated)",
         description = "Creates new dgci and return meta data for certificate creation"
     )
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
