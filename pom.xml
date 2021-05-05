@@ -24,6 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- dependencies -->
+    <dgclib.version>0.3.1</dgclib.version>
     <owasp.version>6.1.1</owasp.version>
     <spring.boot.version>2.4.4</spring.boot.version>
     <spring.cloud.version>2020.0.2</spring.cloud.version>
@@ -130,7 +131,7 @@
     <dependency>
       <groupId>eu.europa.ec.dgc</groupId>
       <artifactId>dgc-lib</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>${dgclib.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
