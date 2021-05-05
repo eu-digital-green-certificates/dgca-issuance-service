@@ -12,15 +12,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CertKeyPublisherService {
     private final CertificateService certificateService;
-    private final Optional<DgcGatewayUploadConnector> dgcGetewayUploadConnector;
+    private final Optional<DgcGatewayUploadConnector> dgcGatewayUploadConnector;
 
     /**
      * publish signing certificate to gateway.
      */
     public void publishKey() {
-        if (dgcGetewayUploadConnector.isPresent()) {
+        if (dgcGatewayUploadConnector.isPresent()) {
             log.info("start publish certificate to gateway");
-            DgcGatewayUploadConnector connector = dgcGetewayUploadConnector.get();
+            DgcGatewayUploadConnector connector = dgcGatewayUploadConnector.get();
             try {
                 connector.uploadTrustedCertificate(certificateService.getCertficate());
                 log.info("certificate uploaded to gateway");
@@ -29,8 +29,8 @@ public class CertKeyPublisherService {
                 throw new DdcGatewayException("error during gateway connector communication",e);
             }
         } else {
-            log.warn("can not publish certificate to gateway, because the getaway connector is not enabled");
-            throw new DdcGatewayException("getaway connector is configured as disabled");
+            log.warn("can not publish certificate to gateway, because the gateway connector is not enabled");
+            throw new DdcGatewayException("gateway connector is configured as disabled");
         }
     }
 }
