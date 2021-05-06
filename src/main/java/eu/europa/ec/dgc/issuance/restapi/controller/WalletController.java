@@ -36,7 +36,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,18 +56,7 @@ public class WalletController {
         @ApiResponse(responseCode = "404", description = "dgci not found"),
         @ApiResponse(responseCode = "400", description = "wrong claim data")})
     @PostMapping(value = "/claim", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> claim(@Valid @RequestBody ClaimRequest claimRequest)
-        throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, InvalidKeyException {
-        dgciService.claim(claimRequest);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<ClaimResponse> claim(@Valid @RequestBody ClaimRequest claimRequest) {
+        return ResponseEntity.ok(dgciService.claim(claimRequest));
     }
-
-    @Operation(
-        summary = "Claims the DGCI for a new TAN and certificate Holder"
-    )
-    @PatchMapping(value = "/claim", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClaimResponse> claimUpdate(@Valid @RequestBody ClaimRequest claimRequest) {
-        return ResponseEntity.ok(dgciService.claimUpdate(claimRequest));
-    }
-
 }

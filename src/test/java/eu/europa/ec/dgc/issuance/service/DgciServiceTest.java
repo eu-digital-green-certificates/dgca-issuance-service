@@ -10,6 +10,7 @@ import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import eu.europa.ec.dgc.issuance.repository.DgciRepository;
 import eu.europa.ec.dgc.issuance.restapi.dto.ClaimRequest;
+import eu.europa.ec.dgc.issuance.restapi.dto.ClaimResponse;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgcDecodeResult;
@@ -128,11 +129,19 @@ class DgciServiceTest {
         ClaimRequest claimRequest = generateClaimRequest(Hex.decode(decodeResult.getCoseHex()),
             egdcCodeData.getDgci(),tanHash, certHash,
             "RSA","SHA256WithRSA");
-        dgciService.claim(claimRequest);
+        ClaimResponse claimResponse = dgciService.claim(claimRequest);
 
         dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertTrue(dgciEnitiyOpt.get().isClaimed());
+
+        // new claim
+        String newTanHash = Base64.getEncoder().encodeToString(
+            MessageDigest.getInstance("SHA-256").digest(claimResponse.getTan().getBytes(StandardCharsets.UTF_8)));
+        ClaimRequest newClaimRequest = generateClaimRequest(Hex.decode(decodeResult.getCoseHex()),
+            egdcCodeData.getDgci(),newTanHash, certHash,
+            "RSA","SHA256WithRSA");
+        dgciService.claim(newClaimRequest);
     }
 
     @Test

@@ -231,16 +231,13 @@ public class DgciService {
      *
      * @param claimRequest claim request
      */
-    public void claim(ClaimRequest claimRequest) {
+    public ClaimResponse claim(ClaimRequest claimRequest) {
         if (!verifySignature(claimRequest)) {
             throw new WrongRequest("signature verification failed");
         }
         Optional<DgciEntity> dgciEntityOptional = dgciRepository.findByDgci(claimRequest.getDgci());
         if (dgciEntityOptional.isPresent()) {
             DgciEntity dgciEntity = dgciEntityOptional.get();
-            if (dgciEntity.isClaimed()) {
-                throw new WrongRequest("already claimed");
-            }
             if (dgciEntity.getRetryCounter() > MAX_CLAIM_RETRY_TAN) {
                 throw new WrongRequest("claim max try exceeded");
             }
@@ -252,17 +249,24 @@ public class DgciService {
                 dgciRepository.saveAndFlush(dgciEntity);
                 throw new WrongRequest("tan mismatch");
             }
-            ZonedDateTime tanExpireTime = dgciEntity.getCreatedAt()
-                .plus(Duration.ofHours(issuanceConfigProperties.getTanExpirationHours()));
-            if (tanExpireTime.isBefore(ZonedDateTime.now())) {
-                throw new WrongRequest("tan expired");
+            if (!dgciEntity.isClaimed()) {
+                ZonedDateTime tanExpireTime = dgciEntity.getCreatedAt()
+                    .plus(Duration.ofHours(issuanceConfigProperties.getTanExpirationHours()));
+                if (tanExpireTime.isBefore(ZonedDateTime.now())) {
+                    throw new WrongRequest("tan expired");
+                }
             }
             dgciEntity.setClaimed(true);
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
             dgciEntity.setPublicKey(claimRequest.getPublicKey().getValue());
-            dgciEntity.setHashedTan(null);
+            String newTan = tanService.generateNewTan();
+            dgciEntity.setHashedTan(tanService.hashTan(newTan));
+            dgciEntity.setRetryCounter(0);
             log.info("dgci {} claimed", dgciEntity.getDgci());
             dgciRepository.saveAndFlush(dgciEntity);
+            ClaimResponse claimResponse = new ClaimResponse();
+            claimResponse.setTan(newTan);
+            return claimResponse;
         } else {
             log.info("can not find dgci {}", claimRequest.getDgci());
             throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());

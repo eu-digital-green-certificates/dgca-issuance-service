@@ -24,5 +24,5 @@ import lombok.Data;
 
 @Data
 public class ClaimResponse {
-    // TODO Claim Response properties
+    String tan;
 }
