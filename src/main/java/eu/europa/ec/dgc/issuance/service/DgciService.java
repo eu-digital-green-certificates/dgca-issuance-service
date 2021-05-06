@@ -179,10 +179,11 @@ public class DgciService {
 
     /**
      * compute cose sign hash.
+     *
      * @param coseMessage cose message
      * @return hash value
      */
-    public byte[] computeCoseSignHash(byte[] coseMessage)  {
+    public byte[] computeCoseSignHash(byte[] coseMessage) {
         try {
             CBORObject coseForSign = CBORObject.NewArray();
             CBORObject cborCose = CBORObject.DecodeFromBytes(coseMessage);
@@ -255,7 +256,8 @@ public class DgciService {
         try {
             kf = KeyFactory.getInstance(claimRequest.getPublicKey().getType());
         } catch (NoSuchAlgorithmException e) {
-            throw new WrongRequest("key type not supported: '"+claimRequest.getPublicKey().getType() + "', try RSA or EC");
+            throw new WrongRequest("key type not supported: '" + claimRequest.getPublicKey().getType()
+                + "', try RSA or EC");
         }
         PublicKey publicKey;
         try {
@@ -267,7 +269,7 @@ public class DgciService {
         try {
             signature = Signature.getInstance(claimRequest.getSigAlg());
         } catch (NoSuchAlgorithmException e) {
-            throw new WrongRequest("signature algorithm not supported: '"+claimRequest.getSigAlg()+ "'");
+            throw new WrongRequest("signature algorithm not supported: '" + claimRequest.getSigAlg() + "'");
         }
         StringBuilder dataToSign = new StringBuilder();
         dataToSign.append(claimRequest.getTanHash())
@@ -281,12 +283,13 @@ public class DgciService {
         } catch (InvalidKeyException e) {
             throw new WrongRequest("invalid key for signature");
         } catch (SignatureException e) {
-            throw new WrongRequest("can not validity signature",e);
+            throw new WrongRequest("can not validity signature", e);
         }
     }
 
     /**
      * Create edgc in backend.
+     *
      * @param eudgc certificate
      * @return edgc qr code and tan
      */
