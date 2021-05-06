@@ -44,6 +44,9 @@ public class DgciEntity {
     @Column(name = "dgci", nullable = false, unique = true)
     private String dgci;
 
+    @Column(name = "dgci_hash", nullable = false, unique = true, length= 512)
+    private String dgciHash;
+
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt = ZonedDateTime.now();
 

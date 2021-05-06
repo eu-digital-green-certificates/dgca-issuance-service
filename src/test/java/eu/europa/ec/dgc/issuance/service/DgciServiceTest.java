@@ -254,6 +254,21 @@ class DgciServiceTest {
         return ASN1.EncodeSignature(r, s);
     }
 
+    @Test
+    void checkDgciExists() throws Exception {
+        DgciInit dgciInit = new DgciInit();
+        dgciInit.setGreenCertificateType(GreenCertificateType.Vaccination);
+        DgciIdentifier initResult = dgciService.initDgci(dgciInit);
+        String dgciHash = Base64.getEncoder().encodeToString(
+            MessageDigest.getInstance("SHA256")
+                .digest(initResult.getDgci().getBytes(StandardCharsets.UTF_8)));
+        assertEquals(DgciService.DgciStatus.EXISTS,dgciService.checkDgciStatus(dgciHash));
+        String dgciHashNotExsits = Base64.getEncoder().encodeToString(
+            MessageDigest.getInstance("SHA256")
+                .digest("not exists".getBytes(StandardCharsets.UTF_8)));
+        assertEquals(DgciService.DgciStatus.NOT_EXISTS,dgciService.checkDgciStatus(dgciHashNotExsits));
+    }
+
 
 
 }

@@ -71,6 +71,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DgciService {
+    public enum DgciStatus {EXISTS, NOT_EXISTS, LOCKED};
+
     private final DgciRepository dgciRepository;
     private final EhdCryptoService ehdCryptoService;
     private final TanService tanService;
@@ -100,6 +102,7 @@ public class DgciService {
         String dgci = generateDgci();
 
         dgciEntity.setDgci(dgci);
+        dgciEntity.setDgciHash(dgciHash(dgci));
         dgciEntity.setGreenCertificateType(dgciInit.getGreenCertificateType());
         dgciRepository.saveAndFlush(dgciEntity);
 
@@ -117,6 +120,16 @@ public class DgciService {
             issuanceConfigProperties.getCountryCode(),
             expiration
         );
+    }
+
+    private String dgciHash(String dgci) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hashBytes = digest.digest(dgci.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private long expirationForType(GreenCertificateType greenCertificateType) {
@@ -335,5 +348,25 @@ public class DgciService {
         dgciRepository.saveAndFlush(dgciEntity);
 
         return egdcCodeData;
+    }
+
+    /**
+     * Check if dgci exists.
+     * @param dgciHash dgci hash
+     * @return DgciStatus
+     */
+    public DgciStatus checkDgciStatus(String dgciHash) {
+        DgciStatus dgciStatus;
+        Optional<DgciEntity> dgciEntity = dgciRepository.findByDgciHash(dgciHash);
+        if (dgciEntity.isPresent()) {
+            if (dgciEntity.get().isLocked()) {
+                dgciStatus = DgciStatus.LOCKED;
+            } else {
+                dgciStatus = DgciStatus.EXISTS;
+            }
+        } else {
+            dgciStatus = DgciStatus.NOT_EXISTS;
+        }
+        return dgciStatus;
     }
 }
