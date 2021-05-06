@@ -53,6 +53,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -212,11 +213,11 @@ public class DgciService {
     }
 
     /**
-     * TODO: Add Comment.
+     * claim dgci to wallet app.
+     * means bind dgci with some public key from wallet app
+     * @param claimRequest claim request
      */
-    public void claim(ClaimRequest claimRequest)
-        throws SignatureException,
-        InvalidKeySpecException, InvalidKeyException {
+    public void claim(ClaimRequest claimRequest) {
         if (!verifySignature(claimRequest)) {
             throw new WrongRequest("signature verification failed");
         }
@@ -236,6 +237,11 @@ public class DgciService {
                 dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
                 dgciRepository.saveAndFlush(dgciEntity);
                 throw new WrongRequest("tan mismatch");
+            }
+            ZonedDateTime tanExpireTime = dgciEntity.getCreatedAt()
+                .plus(Duration.ofHours(issuanceConfigProperties.getTanExpirationHours()));
+            if (tanExpireTime.isBefore(ZonedDateTime.now())) {
+                throw new WrongRequest("tan expired");
             }
             dgciEntity.setClaimed(true);
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
