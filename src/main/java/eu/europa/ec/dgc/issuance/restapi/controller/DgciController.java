@@ -118,13 +118,19 @@ public class DgciController {
     }
 
     @Operation(
-        summary = "Returns a DID document"
+        summary = "Returns a DID document",
+        description = "Return a DID document"
     )
     @GetMapping(value = "/{dgciHash}")
     public ResponseEntity<DidDocument> getDidDocument(@PathVariable String dgciHash) {
         return ResponseEntity.ok(dgciService.getDidDocument(dgciHash));
     }
 
+    /**
+     * dgci status.
+     * @param dgciHash hash
+     * @return response
+     */
     @Operation(
         summary = "Checks the status of DGCI",
         description = "Produce status HTTP code message"

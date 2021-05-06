@@ -71,10 +71,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DgciService {
-    public enum DgciStatus {EXISTS, NOT_EXISTS, LOCKED};
+
+    public enum DgciStatus { EXISTS, NOT_EXISTS, LOCKED }
 
     private final DgciRepository dgciRepository;
-    private final EhdCryptoService ehdCryptoService;
     private final TanService tanService;
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
@@ -228,6 +228,7 @@ public class DgciService {
     /**
      * claim dgci to wallet app.
      * means bind dgci with some public key from wallet app
+     *
      * @param claimRequest claim request
      */
     public void claim(ClaimRequest claimRequest) {
@@ -352,6 +353,7 @@ public class DgciService {
 
     /**
      * Check if dgci exists.
+     *
      * @param dgciHash dgci hash
      * @return DgciStatus
      */

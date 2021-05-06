@@ -20,9 +20,12 @@
 
 package eu.europa.ec.dgc.issuance;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.UUID;
 import org.junit.Test;
 
 public class Sh256HashTest {
@@ -32,5 +35,19 @@ public class Sh256HashTest {
         final byte[] hashbytes = digest.digest(
             "some_data".getBytes(StandardCharsets.UTF_8));
         System.out.println(Base64.getEncoder().encodeToString(hashbytes));
+    }
+
+    @Test
+    public void dgciEncoding() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        System.out.println(uuid.toString());
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        BigInteger bint = new BigInteger(1, bb.array());
+        int radix = 10+('Z'-'A');
+        String dgciRep = bint.toString(radix).toUpperCase();
+        System.out.println(dgciRep);
+        System.out.println(dgciRep.length());
     }
 }
