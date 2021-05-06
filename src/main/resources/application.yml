@@ -46,6 +46,7 @@ issuance:
   certAlias: edgc_dev_ec
   privateKeyPassword: dgca
   countryCode: DE
+  tanExpirationHours: 24
 dgc:
   gateway:
     connector:

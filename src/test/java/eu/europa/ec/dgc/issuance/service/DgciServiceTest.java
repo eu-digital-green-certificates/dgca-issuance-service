@@ -19,10 +19,15 @@ import eu.europa.ec.dgc.issuance.restapi.dto.PublicKey;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
@@ -120,7 +125,9 @@ class DgciServiceTest {
         assertTrue(decodeResult.isValidated());
         assertNull(decodeResult.getErrorMessage());
 
-        ClaimRequest claimRequest = generateClaimRequest(Hex.decode(decodeResult.getCoseHex()),egdcCodeData.getDgci(),tanHash, certHash);
+        ClaimRequest claimRequest = generateClaimRequest(Hex.decode(decodeResult.getCoseHex()),
+            egdcCodeData.getDgci(),tanHash, certHash,
+            "RSA","SHA256WithRSA");
         dgciService.claim(claimRequest);
 
         dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
@@ -128,12 +135,41 @@ class DgciServiceTest {
         assertTrue(dgciEnitiyOpt.get().isClaimed());
     }
 
-    private ClaimRequest generateClaimRequest(byte[] coseMessage, String dgci, String tanHash, String certHash64) throws Exception {
+    @Test
+    void testWalletClaimEC() throws Exception {
+        String vacDataJson = SampleData.Companion.getVaccination();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Eudgc eudgc = objectMapper.readValue(vacDataJson,Eudgc.class);
+        EgdcCodeData egdcCodeData = dgciService.createEdgc(eudgc);
+        assertNotNull(egdcCodeData);
+        assertNotNull(egdcCodeData.getQrcCode());
+        Optional<DgciEntity> dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
+        assertTrue(dgciEnitiyOpt.isPresent());
+        assertFalse(dgciEnitiyOpt.get().isClaimed());
+        String tanHash = dgciEnitiyOpt.get().getHashedTan();
+        String certHash = dgciEnitiyOpt.get().getCertHash();
+        assertEquals(GreenCertificateType.Vaccination,dgciEnitiyOpt.get().getGreenCertificateType());
+
+        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrcCode());
+        assertTrue(decodeResult.isValidated());
+        assertNull(decodeResult.getErrorMessage());
+
+        ClaimRequest claimRequest = generateClaimRequest(Hex.decode(decodeResult.getCoseHex()),
+            egdcCodeData.getDgci(),tanHash, certHash,
+            "EC","SHA256withECDSA");
+        dgciService.claim(claimRequest);
+
+        dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
+        assertTrue(dgciEnitiyOpt.isPresent());
+        assertTrue(dgciEnitiyOpt.get().isClaimed());
+    }
+
+    private ClaimRequest generateClaimRequest(byte[] coseMessage, String dgci, String tanHash, String certHash64, String keyType, String sigAlg) throws Exception {
         ClaimRequest claimRequest = new ClaimRequest();
         claimRequest.setDgci(dgci);
 
-        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-        keyPairGen.initialize(2048);
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(keyType);
+        keyPairGen.initialize("RSA".equals(keyType) ? 2048 : 256);
         KeyPair keyPair = keyPairGen.generateKeyPair();
         byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
 
@@ -142,26 +178,32 @@ class DgciServiceTest {
         bos.write(Base64.getDecoder().decode(tanHash));
         bos.write(publicKeyBytes);
 
-        Signature signature = Signature.getInstance("SHA256WithRSA");
-        signature.initSign(keyPair.getPrivate());
-        signature.update(bos.toByteArray());
-        byte[] sigData = signature.sign();
-
         claimRequest.setTanHash(tanHash);
-        claimRequest.setSignature(Base64.getEncoder().encodeToString(sigData));
-
-        byte[] certHash = dgciService.computeCoseSignHash(coseMessage);
-        String recomputedCertHash64 = Base64.getEncoder().encodeToString(certHash);
-        assertEquals(certHash64,recomputedCertHash64);
-        claimRequest.setCertHash(recomputedCertHash64);
 
         PublicKey publicKey = new PublicKey();
         publicKey.setValue(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
         publicKey.setType(keyPair.getPublic().getAlgorithm());
         claimRequest.setPublicKey(publicKey);
-        claimRequest.setSigAlg("SHA256WithRSA");
+        claimRequest.setSigAlg(sigAlg);
+        byte[] certHash = dgciService.computeCoseSignHash(coseMessage);
+        String recomputedCertHash64 = Base64.getEncoder().encodeToString(certHash);
+        assertEquals(certHash64,recomputedCertHash64);
+        claimRequest.setCertHash(recomputedCertHash64);
+        createClaimSignature(claimRequest,keyPair.getPrivate(), sigAlg);
 
         return claimRequest;
+    }
+
+    private void createClaimSignature(ClaimRequest claimRequest, PrivateKey privateKey, String sigAlg) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+        StringBuilder sigValue = new StringBuilder();
+        sigValue.append(claimRequest.getTanHash())
+            .append(claimRequest.getCertHash())
+            .append(claimRequest.getPublicKey().getValue());
+        Signature signature = Signature.getInstance(sigAlg);
+        signature.initSign(privateKey);
+        signature.update(sigValue.toString().getBytes(StandardCharsets.UTF_8));
+        byte[] sigData = signature.sign();
+        claimRequest.setSignature(Base64.getEncoder().encodeToString(sigData));
     }
 
     @Test

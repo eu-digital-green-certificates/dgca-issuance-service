@@ -35,5 +35,6 @@ public class IssuanceConfigProperties {
     private String certAlias;
     private String privateKeyPassword;
     private String countryCode;
+    private int tanExpirationHours = 24;
 
 }
