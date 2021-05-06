@@ -43,8 +43,7 @@ import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
@@ -140,12 +139,12 @@ public class DgciService {
         Optional<DgciEntity> dgciEntityOpt = dgciRepository.findById(dgciId);
         if (dgciEntityOpt.isPresent()) {
             var dgciEntity = dgciEntityOpt.get();
-            String signatureBase64 = certificateService.signHash(issueData.getHash());
             String tan = tanService.generateNewTan();
             dgciEntity.setHashedTan(tanService.hashTan(tan));
             dgciEntity.setCertHash(issueData.getHash());
             dgciRepository.saveAndFlush(dgciEntity);
             log.info("signed for " + dgciId);
+            String signatureBase64 = certificateService.signHash(issueData.getHash());
             return new SignatureData(tan, signatureBase64);
         } else {
             log.warn("can not find dgci with id " + dgciId);
@@ -215,7 +214,7 @@ public class DgciService {
      * TODO: Add Comment.
      */
     public void claim(ClaimRequest claimRequest)
-        throws IOException, NoSuchAlgorithmException, SignatureException,
+        throws SignatureException,
         InvalidKeySpecException, InvalidKeyException {
         if (!verifySignature(claimRequest)) {
             throw new WrongRequest("signature verification failed");
@@ -249,22 +248,41 @@ public class DgciService {
         }
     }
 
-    private boolean verifySignature(ClaimRequest claimRequest)
-        throws IOException, NoSuchAlgorithmException, SignatureException,
-        InvalidKeyException, InvalidKeySpecException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bos.write(claimRequest.getDgci().getBytes());
-        bos.write(Base64.getDecoder().decode(claimRequest.getTanHash()));
+    private boolean verifySignature(ClaimRequest claimRequest) {
         byte[] keyBytes = Base64.getDecoder().decode(claimRequest.getPublicKey().getValue());
-        bos.write(keyBytes);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance(claimRequest.getPublicKey().getType());
-        PublicKey publicKey = kf.generatePublic(spec);
-        Signature signature = Signature.getInstance(claimRequest.getSigAlg());
-        signature.initVerify(publicKey);
-        signature.update(bos.toByteArray());
-        byte[] sigBytes = Base64.getDecoder().decode(claimRequest.getSignature());
-        return signature.verify(sigBytes);
+        KeyFactory kf;
+        try {
+            kf = KeyFactory.getInstance(claimRequest.getPublicKey().getType());
+        } catch (NoSuchAlgorithmException e) {
+            throw new WrongRequest("key type not supported: '"+claimRequest.getPublicKey().getType() + "', try RSA or EC");
+        }
+        PublicKey publicKey;
+        try {
+            publicKey = kf.generatePublic(spec);
+        } catch (InvalidKeySpecException e) {
+            throw new WrongRequest("invalid key");
+        }
+        Signature signature;
+        try {
+            signature = Signature.getInstance(claimRequest.getSigAlg());
+        } catch (NoSuchAlgorithmException e) {
+            throw new WrongRequest("signature algorithm not supported: '"+claimRequest.getSigAlg()+ "'");
+        }
+        StringBuilder dataToSign = new StringBuilder();
+        dataToSign.append(claimRequest.getTanHash())
+            .append(claimRequest.getCertHash())
+            .append(claimRequest.getPublicKey().getValue());
+        try {
+            signature.initVerify(publicKey);
+            signature.update(dataToSign.toString().getBytes(StandardCharsets.UTF_8));
+            byte[] sigBytes = Base64.getDecoder().decode(claimRequest.getSignature());
+            return signature.verify(sigBytes);
+        } catch (InvalidKeyException e) {
+            throw new WrongRequest("invalid key for signature");
+        } catch (SignatureException e) {
+            throw new WrongRequest("can not validity signature",e);
+        }
     }
 
     /**
