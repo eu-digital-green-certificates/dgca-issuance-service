@@ -20,6 +20,12 @@
 
 package eu.europa.ec.dgc.issuance.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 import ehn.techiop.hcert.data.Eudgc;
@@ -51,6 +57,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
@@ -213,9 +221,13 @@ public class DgciService {
                 didAuthentication.setExpires(dgciEntity.getExpiresAt()
                     .toOffsetDateTime().format(
                         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
-                // TODO use jwk here (need to be already stored in such format)
-                didAuthentication.setPublicKeyBase58(
-                    Base64.getEncoder().encodeToString(certificateService.publicKey()));
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    JsonNode jwkNode = objectMapper.readTree(dgciEntity.getPublicKey());
+                    didAuthentication.setPublicKeyJsw(jwkNode);
+                } catch (JsonProcessingException e) {
+                    log.error("data error, public key is not jwk json for dgci.id" + dgciEntity.getId());
+                }
                 didAuthentications.add(didAuthentication);
             }
             didDocument.setAuthentication(didAuthentications);
@@ -282,7 +294,7 @@ public class DgciService {
             }
             dgciEntity.setClaimed(true);
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
-            dgciEntity.setPublicKey(claimRequest.getPublicKey().getValue());
+            dgciEntity.setPublicKey(asJwk(claimRequest.getPublicKey()));
             String newTan = tanService.generateNewTan();
             dgciEntity.setHashedTan(tanService.hashTan(newTan));
             dgciEntity.setRetryCounter(0);
@@ -295,6 +307,37 @@ public class DgciService {
             log.info("can not find dgci {}", claimRequest.getDgci());
             throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());
         }
+    }
+
+    private String asJwk(eu.europa.ec.dgc.issuance.restapi.dto.PublicKey publicKeyClaim) {
+        byte[] keyBytes = Base64.getDecoder().decode(publicKeyClaim.getValue());
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf;
+        try {
+            kf = KeyFactory.getInstance(publicKeyClaim.getType());
+        } catch (NoSuchAlgorithmException e) {
+            throw new WrongRequest("key type not supported: '" + publicKeyClaim.getType()
+                + "', try RSA or EC");
+        }
+        PublicKey publicKey;
+        try {
+            publicKey = kf.generatePublic(spec);
+        } catch (InvalidKeySpecException e) {
+            throw new WrongRequest("invalid key");
+        }
+        String jwkString;
+        if (publicKey instanceof RSAPublicKey) {
+            RSAKey jwkKey = new RSAKey.Builder((RSAPublicKey) publicKey).build();
+            jwkString = jwkKey.toJSONString();
+        } else if (publicKey instanceof ECPublicKey) {
+            ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+            Curve curve = Curve.forECParameterSpec(ecPublicKey.getParams());
+            ECKey jwkKey = new ECKey.Builder(curve,ecPublicKey).build();
+            jwkString = jwkKey.toJSONString();
+        } else {
+            throw new WrongRequest("unsupported key type");
+        }
+        return jwkString;
     }
 
     private boolean verifySignature(ClaimRequest claimRequest) {

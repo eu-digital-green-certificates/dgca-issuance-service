@@ -164,6 +164,10 @@ class DgciServiceTest {
         String dgciHash = sha256(egdcCodeData.getDgci());
         DidDocument didDocument = dgciService.getDidDocument(dgciHash);
         assertNotNull(didDocument);
+        assertNotNull(didDocument.getAuthentication());
+        assertFalse(didDocument.getAuthentication().isEmpty());
+        System.out.println(objectMapper.writeValueAsString(didDocument.getAuthentication().get(0).getPublicKeyJsw()));
+
     }
 
     private String sha256(String toHash) throws NoSuchAlgorithmException {
@@ -199,6 +203,13 @@ class DgciServiceTest {
         dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertTrue(dgciEnitiyOpt.get().isClaimed());
+
+        String dgciHash = sha256(egdcCodeData.getDgci());
+        DidDocument didDocument = dgciService.getDidDocument(dgciHash);
+        assertNotNull(didDocument);
+        assertNotNull(didDocument.getAuthentication());
+        assertFalse(didDocument.getAuthentication().isEmpty());
+        System.out.println(objectMapper.writeValueAsString(didDocument.getAuthentication().get(0).getPublicKeyJsw()));
     }
 
 
