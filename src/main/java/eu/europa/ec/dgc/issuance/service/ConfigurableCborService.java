@@ -42,9 +42,9 @@ public class ConfigurableCborService extends DefaultCborService {
             throw new IllegalArgumentException(e);
         }
         GreenCertificateType greenCertificateType;
-        if (input.getT() != null && input.getT().size() > 0) {
+        if (input.getT() != null && !input.getT().isEmpty()) {
             greenCertificateType = GreenCertificateType.Test;
-        } else if (input.getR() != null && input.getR().size() > 0) {
+        } else if (input.getR() != null && !input.getR().isEmpty()) {
             greenCertificateType = GreenCertificateType.Recovery;
         } else {
             greenCertificateType = GreenCertificateType.Vaccination;
