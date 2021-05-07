@@ -20,21 +20,51 @@
 
 package eu.europa.ec.dgc.issuance.config;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.convert.DurationUnit;
 
 @Getter
 @Setter
 @ConfigurationProperties("issuance")
 public class IssuanceConfigProperties {
-
+    @NotBlank
+    @Size(max = 20)
     private String dgciPrefix;
     private String keyStoreFile;
     private String keyStorePassword;
     private String certAlias;
     private String privateKeyPassword;
+    @NotBlank
+    @Size(max = 2)
     private String countryCode;
-    private int tanExpirationHours = 24;
+    @DurationUnit(ChronoUnit.HOURS)
+    private Duration tanExpirationHours = Duration.ofHours(24);
+    /**
+     * JSON file that is provided to /context endpoint.
+     */
+    private String contextFile;
+    @NotNull
+    private Expiration expiration;
+
+    @Getter
+    @Setter
+    public static class Expiration {
+        @DurationUnit(ChronoUnit.DAYS)
+        @NotNull
+        private Duration vaccination;
+        @DurationUnit(ChronoUnit.DAYS)
+        @NotNull
+        private Duration recovery;
+        @DurationUnit(ChronoUnit.DAYS)
+        @NotNull
+        private Duration test;
+    }
 
 }
