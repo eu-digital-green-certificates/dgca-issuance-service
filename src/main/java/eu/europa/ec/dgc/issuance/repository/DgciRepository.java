@@ -28,4 +28,5 @@ public interface DgciRepository extends JpaRepository<DgciEntity, Long> {
 
     Optional<DgciEntity> findByDgci(String dgci);
 
+    Optional<DgciEntity> findByDgciHash(String dgciHash);
 }

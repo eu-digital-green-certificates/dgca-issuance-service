@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- dependencies -->
-    <dgclib.version>0.3.1</dgclib.version>
+    <dgclib.version>0.4.0</dgclib.version>
     <owasp.version>6.1.1</owasp.version>
     <spring.boot.version>2.4.4</spring.boot.version>
     <spring.cloud.version>2020.0.2</spring.cloud.version>

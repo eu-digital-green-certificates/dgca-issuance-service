@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -116,20 +118,43 @@ public class DgciController {
     }
 
     @Operation(
-        summary = "Returns a DID document"
+        summary = "Returns a DID document",
+        description = "Return a DID document"
     )
-    @GetMapping(value = "/{hash}")
-    public ResponseEntity<DidDocument> getDidDocument(@PathVariable String opaque, String hash) {
-        return ResponseEntity.ok(dgciService.getDidDocument(hash));
+    @GetMapping(value = "/{dgciHash}")
+    public ResponseEntity<DidDocument> getDidDocument(@PathVariable String dgciHash) {
+        return ResponseEntity.ok(dgciService.getDidDocument(dgciHash));
     }
 
+    /**
+     * dgci status.
+     * @param dgciHash hash
+     * @return response
+     */
     @Operation(
         summary = "Checks the status of DGCI",
-        description = "Produce status message"
+        description = "Produce status HTTP code message"
     )
-    @GetMapping(value = "/status")
-    public ResponseEntity<String> status() {
-        // not was not really specified what it is good for
-        return ResponseEntity.ok("fine");
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "dgci exists"),
+        @ApiResponse(responseCode = "424", description = "dgci locked"),
+        @ApiResponse(responseCode = "404", description = "dgci not found")})
+    @RequestMapping(value = "/{dgciHash}",method = RequestMethod.HEAD)
+    public ResponseEntity<Void> dgciStatus(@PathVariable String dgciHash) {
+        HttpStatus httpStatus;
+        switch (dgciService.checkDgciStatus(dgciHash)) {
+            case EXISTS:
+                httpStatus = HttpStatus.NO_CONTENT;
+                break;
+            case LOCKED:
+                httpStatus = HttpStatus.LOCKED;
+                break;
+            case NOT_EXISTS:
+                httpStatus = HttpStatus.NOT_FOUND;
+                break;
+            default:
+                throw new IllegalArgumentException("unknown dgci status");
+        }
+        return ResponseEntity.status(httpStatus).build();
     }
 }
