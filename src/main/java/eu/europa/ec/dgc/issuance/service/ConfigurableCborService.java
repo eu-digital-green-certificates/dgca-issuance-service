@@ -11,7 +11,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,10 +26,8 @@ public class ConfigurableCborService extends DefaultCborService {
     public static final int EXPIRATION = 4;
     public static final int HCERT = -260;
     public static final int HCERT_VERSION = 1;
-    // Need autowired because there is circular reference
-    @Autowired
-    private DgciService dgciService;
 
+    private final ExpirationService expirationService;
     private final IssuanceConfigProperties issuanceConfigProperties;
 
     @Override
@@ -50,7 +47,8 @@ public class ConfigurableCborService extends DefaultCborService {
             greenCertificateType = GreenCertificateType.Vaccination;
         }
         long issueTime = Instant.now().getEpochSecond();
-        long expirationTime = issueTime + dgciService.expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
+        long expirationTime = issueTime
+            + expirationService.expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
         CBORObject coseContainer = CBORObject.NewMap();
         coseContainer.set(CBORObject.FromObject(ISSUER),
             CBORObject.FromObject(issuanceConfigProperties.getCountryCode()));
