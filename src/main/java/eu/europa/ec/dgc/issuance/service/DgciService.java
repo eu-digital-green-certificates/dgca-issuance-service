@@ -20,6 +20,12 @@
 
 package eu.europa.ec.dgc.issuance.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 import ehn.techiop.hcert.data.Eudgc;
@@ -51,14 +57,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -72,7 +80,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DgciService {
 
-    public enum DgciStatus { EXISTS, NOT_EXISTS, LOCKED }
+    public enum DgciStatus {
+        EXISTS, NOT_EXISTS, LOCKED
+    }
 
     private final DgciRepository dgciRepository;
     private final TanService tanService;
@@ -87,10 +97,6 @@ public class DgciService {
 
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
-    // one year in seconds
-    // TODO: shift to spring configuration
-    private static final long EXPIRATION_PERIOD_SEC = 60 * 60 * 24 * 364L;
-
     /**
      * Initializes new DGCI.
      *
@@ -104,13 +110,15 @@ public class DgciService {
         dgciEntity.setDgci(dgci);
         dgciEntity.setDgciHash(dgciHash(dgci));
         dgciEntity.setGreenCertificateType(dgciInit.getGreenCertificateType());
-        dgciRepository.saveAndFlush(dgciEntity);
 
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
 
-        Date now = new Date();
-        long sec = now.getTime() / 1000;
-        long expiration = sec + expirationForType(dgciInit.getGreenCertificateType());
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime expiration = now.plus(expirationForType(dgciInit.getGreenCertificateType()));
+        long expirationSec = expiration.toInstant().getEpochSecond();
+
+        dgciEntity.setExpiresAt(expiration);
+        dgciRepository.saveAndFlush(dgciEntity);
 
         return new DgciIdentifier(
             dgciEntity.getId(),
@@ -118,7 +126,7 @@ public class DgciService {
             certificateService.getKidAsBase64(),
             certificateService.getAlgorithmIdentifier(),
             issuanceConfigProperties.getCountryCode(),
-            expiration
+            expirationSec
         );
     }
 
@@ -132,9 +140,34 @@ public class DgciService {
         }
     }
 
-    private long expirationForType(GreenCertificateType greenCertificateType) {
-        // TODO compute expiration dependend on certificate type and probably config
-        return EXPIRATION_PERIOD_SEC;
+    /**
+     * expiration duration for given edgc type.
+     * @param greenCertificateType edgc type
+     * @return Duration
+     */
+    public Duration expirationForType(GreenCertificateType greenCertificateType) {
+        Duration duration;
+        if (issuanceConfigProperties.getExpiration() != null) {
+            switch (greenCertificateType) {
+                case Test:
+                    duration = issuanceConfigProperties.getExpiration().getTest();
+                    break;
+                case Vaccination:
+                    duration = issuanceConfigProperties.getExpiration().getVaccination();
+                    break;
+                case Recovery:
+                    duration = issuanceConfigProperties.getExpiration().getRecovery();
+                    break;
+                default:
+                    throw new IllegalArgumentException("unsupported cert type for expiration: " + greenCertificateType);
+            }
+        } else {
+            duration = null;
+        }
+        if (duration == null) {
+            duration = Duration.of(365, ChronoUnit.DAYS);
+        }
+        return duration;
     }
 
     @NotNull
@@ -169,26 +202,39 @@ public class DgciService {
     /**
      * get did document.
      *
-     * @param hash hash
+     * @param dgciHash dgciHash
      * @return didDocument
      */
-    public DidDocument getDidDocument(String hash) {
-        DidDocument didDocument = new DidDocument();
-        didDocument.setContext("https://w3id.org/did/v1");
-        // TODO DID fake data
-        didDocument.setId("dgc:V1:DE:xxxxxxxxx:34sdfmnn3434fdf89");
-        didDocument.setController("did:web:ec.europa.eu/health/dgc/efdv34k34mdmdfj344");
-        DidAuthentication didAuthentication = new DidAuthentication();
-        didAuthentication.setController("dgc:V1:DE:xxxxxxxxx:34sdfmnn3434fdf89");
-        didAuthentication.setType("EcdsaSecp256k1VerificationKey2018");
-        didAuthentication.setExpires("2017-02-08T16:02:20Z");
-        // TODO use base58 here
-        didAuthentication.setPublicKeyBase58(Base64.getEncoder().encodeToString(certificateService.publicKey()));
-
-        List<DidAuthentication> didAuthentications = new ArrayList<>();
-        didAuthentications.add(didAuthentication);
-        didDocument.setAuthentication(didAuthentications);
-        return didDocument;
+    public DidDocument getDidDocument(String dgciHash) {
+        Optional<DgciEntity> dgciEntityOpt = dgciRepository.findByDgciHash(dgciHash);
+        if (dgciEntityOpt.isPresent()) {
+            DgciEntity dgciEntity = dgciEntityOpt.get();
+            DidDocument didDocument = new DidDocument();
+            didDocument.setContext("https://w3id.org/did/v1");
+            didDocument.setId(dgciEntity.getDgci());
+            didDocument.setController(dgciEntity.getDgci());
+            List<DidAuthentication> didAuthentications = new ArrayList<>();
+            if (dgciEntity.isClaimed()) {
+                DidAuthentication didAuthentication = new DidAuthentication();
+                didAuthentication.setController(dgciEntity.getDgci());
+                didAuthentication.setType("EcdsaSecp256k1VerificationKey2018");
+                didAuthentication.setExpires(dgciEntity.getExpiresAt()
+                    .toOffsetDateTime().format(
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    JsonNode jwkNode = objectMapper.readTree(dgciEntity.getPublicKey());
+                    didAuthentication.setPublicKeyJsw(jwkNode);
+                } catch (JsonProcessingException e) {
+                    log.error("data error, public key is not jwk json for dgci.id" + dgciEntity.getId());
+                }
+                didAuthentications.add(didAuthentication);
+            }
+            didDocument.setAuthentication(didAuthentications);
+            return didDocument;
+        } else {
+            throw new DgciNotFound("can not find dgci with hash: " + dgciHash);
+        }
     }
 
     /**
@@ -213,16 +259,6 @@ public class DgciService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Currently not Implemented.
-     */
-    public ClaimResponse claimUpdate(ClaimRequest claimRequest) {
-        ClaimResponse claimResponse = new ClaimResponse();
-        // TODO wallet claim post (update?)
-        throw new RuntimeException("not implemented yet");
-        // return claimResponse;
     }
 
     /**
@@ -251,14 +287,14 @@ public class DgciService {
             }
             if (!dgciEntity.isClaimed()) {
                 ZonedDateTime tanExpireTime = dgciEntity.getCreatedAt()
-                    .plus(Duration.ofHours(issuanceConfigProperties.getTanExpirationHours()));
+                    .plus(issuanceConfigProperties.getTanExpirationHours());
                 if (tanExpireTime.isBefore(ZonedDateTime.now())) {
                     throw new WrongRequest("tan expired");
                 }
             }
             dgciEntity.setClaimed(true);
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
-            dgciEntity.setPublicKey(claimRequest.getPublicKey().getValue());
+            dgciEntity.setPublicKey(asJwk(claimRequest.getPublicKey()));
             String newTan = tanService.generateNewTan();
             dgciEntity.setHashedTan(tanService.hashTan(newTan));
             dgciEntity.setRetryCounter(0);
@@ -271,6 +307,37 @@ public class DgciService {
             log.info("can not find dgci {}", claimRequest.getDgci());
             throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());
         }
+    }
+
+    private String asJwk(eu.europa.ec.dgc.issuance.restapi.dto.PublicKey publicKeyClaim) {
+        byte[] keyBytes = Base64.getDecoder().decode(publicKeyClaim.getValue());
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf;
+        try {
+            kf = KeyFactory.getInstance(publicKeyClaim.getType());
+        } catch (NoSuchAlgorithmException e) {
+            throw new WrongRequest("key type not supported: '" + publicKeyClaim.getType()
+                + "', try RSA or EC");
+        }
+        PublicKey publicKey;
+        try {
+            publicKey = kf.generatePublic(spec);
+        } catch (InvalidKeySpecException e) {
+            throw new WrongRequest("invalid key");
+        }
+        String jwkString;
+        if (publicKey instanceof RSAPublicKey) {
+            RSAKey jwkKey = new RSAKey.Builder((RSAPublicKey) publicKey).build();
+            jwkString = jwkKey.toJSONString();
+        } else if (publicKey instanceof ECPublicKey) {
+            ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+            Curve curve = Curve.forECParameterSpec(ecPublicKey.getParams());
+            ECKey jwkKey = new ECKey.Builder(curve,ecPublicKey).build();
+            jwkString = jwkKey.toJSONString();
+        } else {
+            throw new WrongRequest("unsupported key type");
+        }
+        return jwkString;
     }
 
     private boolean verifySignature(ClaimRequest claimRequest) {
@@ -346,10 +413,11 @@ public class DgciService {
         DgciEntity dgciEntity = new DgciEntity();
         dgciEntity.setDgci(dgci);
         dgciEntity.setCertHash(Base64.getEncoder().encodeToString(computeCoseSignHash(chainResult.getStep2Cose())));
+        dgciEntity.setDgciHash(dgciHash(dgci));
         dgciEntity.setHashedTan(tanService.hashTan(tan));
         dgciEntity.setGreenCertificateType(greenCertificateType);
         dgciEntity.setCreatedAt(ZonedDateTime.now());
-        dgciEntity.setExpiresAt(ZonedDateTime.now().plus(expirationForType(greenCertificateType), ChronoUnit.SECONDS));
+        dgciEntity.setExpiresAt(ZonedDateTime.now().plus(expirationForType(greenCertificateType)));
         dgciRepository.saveAndFlush(dgciEntity);
 
         return egdcCodeData;

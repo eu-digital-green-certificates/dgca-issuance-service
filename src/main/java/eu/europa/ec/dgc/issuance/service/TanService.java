@@ -75,7 +75,9 @@ public class TanService {
     }
 
     /**
-     * TODO comment.
+     * compute tan hash.
+     *
+     * @return TAN hash
      */
     public String hashTan(String tan) {
         try {

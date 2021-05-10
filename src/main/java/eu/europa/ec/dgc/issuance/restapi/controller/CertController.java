@@ -69,7 +69,7 @@ public class CertController {
      * Controller for creating Vaccination Certificate.
      */
     @Operation(
-        summary = "create edgc with process step informations, developing tool"
+        summary = "create edgc with process step information, developing tool"
     )
     @PostMapping(value = "create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChainResult> createVaccinationCertificate(@RequestBody Eudgc eudgc) {

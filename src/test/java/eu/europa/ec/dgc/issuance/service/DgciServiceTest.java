@@ -2,6 +2,7 @@ package eu.europa.ec.dgc.issuance.service;
 
 import COSE.ASN1;
 import COSE.CoseException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.SampleData;
@@ -13,6 +14,7 @@ import eu.europa.ec.dgc.issuance.restapi.dto.ClaimRequest;
 import eu.europa.ec.dgc.issuance.restapi.dto.ClaimResponse;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
+import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgcDecodeResult;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
@@ -88,6 +90,10 @@ class DgciServiceTest {
         assertNotNull(signatureData.getSignature());
         assertNotNull(signatureData.getTan());
         assertEquals(8,signatureData.getTan().length());
+
+        String dgciHash = sha256(dgciIdentifier.getDgci());
+        DidDocument didDocument = dgciService.getDidDocument(dgciHash);
+        assertNotNull(didDocument);
     }
 
     @Test
@@ -101,10 +107,22 @@ class DgciServiceTest {
         Optional<DgciEntity> dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertEquals(GreenCertificateType.Vaccination,dgciEnitiyOpt.get().getGreenCertificateType());
+        assertNotNull(dgciEnitiyOpt.get().getCertHash());
+        assertNotNull(dgciEnitiyOpt.get().getDgciHash());
+        assertNotNull(dgciEnitiyOpt.get().getHashedTan());
+        assertNotNull(dgciEnitiyOpt.get().getExpiresAt());
 
         EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrcCode());
         assertTrue(decodeResult.isValidated());
         assertNull(decodeResult.getErrorMessage());
+        JsonNode cborJson = decodeResult.getCborJson();
+        assertNotNull(cborJson);
+        assertEquals(issuanceConfigProperties.getCountryCode(),cborJson.get("1").asText());
+        long createdAt = cborJson.get("1").asLong();
+        long expiredAt = cborJson.get("4").asLong();
+        JsonNode payload = cborJson.get("-260").get("1");
+        assertNotNull(payload);
+        assertTrue(payload.isObject());
     }
 
     @Test
@@ -142,6 +160,20 @@ class DgciServiceTest {
             egdcCodeData.getDgci(),newTanHash, certHash,
             "RSA","SHA256WithRSA");
         dgciService.claim(newClaimRequest);
+
+        String dgciHash = sha256(egdcCodeData.getDgci());
+        DidDocument didDocument = dgciService.getDidDocument(dgciHash);
+        assertNotNull(didDocument);
+        assertNotNull(didDocument.getAuthentication());
+        assertFalse(didDocument.getAuthentication().isEmpty());
+        System.out.println(objectMapper.writeValueAsString(didDocument.getAuthentication().get(0).getPublicKeyJsw()));
+
+    }
+
+    private String sha256(String toHash) throws NoSuchAlgorithmException {
+        return Base64.getEncoder().encodeToString(
+            MessageDigest.getInstance("SHA256")
+                .digest(toHash.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
@@ -171,7 +203,16 @@ class DgciServiceTest {
         dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertTrue(dgciEnitiyOpt.get().isClaimed());
+
+        String dgciHash = sha256(egdcCodeData.getDgci());
+        DidDocument didDocument = dgciService.getDidDocument(dgciHash);
+        assertNotNull(didDocument);
+        assertNotNull(didDocument.getAuthentication());
+        assertFalse(didDocument.getAuthentication().isEmpty());
+        System.out.println(objectMapper.writeValueAsString(didDocument.getAuthentication().get(0).getPublicKeyJsw()));
     }
+
+
 
     private ClaimRequest generateClaimRequest(byte[] coseMessage, String dgci, String tanHash, String certHash64, String keyType, String sigAlg) throws Exception {
         ClaimRequest claimRequest = new ClaimRequest();
