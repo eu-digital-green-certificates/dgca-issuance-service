@@ -52,34 +52,6 @@ public class DgciController {
 
     private final DgciService dgciService;
 
-
-    @Operation(
-        summary = "Creates new dgci (deprecated)",
-        description = "Creates new dgci and return meta data for certificate creation"
-    )
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Deprecated
-    public ResponseEntity<DgciIdentifier> initDgciDepr(@Valid @RequestBody DgciInit dgciInit) {
-        return ResponseEntity.ok(dgciService.initDgci(dgciInit));
-    }
-
-    @Operation(
-        summary = "calculate cose signature for edgc (deprecated)",
-        description = "calculate cose signature for given certificate hash, "
-            + "generate TAN and update DGCI Registry database"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "signature created"),
-        @ApiResponse(responseCode = "404", description = "dgci with related id not found"),
-        @ApiResponse(responseCode = "400", description = "wrong issue data")})
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Deprecated
-    public ResponseEntity<SignatureData> finalizeDgciDepr(@PathVariable long id,
-                                                          @Valid @RequestBody IssueData issueData)
-        throws Exception {
-        return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
-    }
-
     @Operation(
         summary = "Prepares an DGCI for the Code Generation in Frontend",
         description = "Creates new dgci and return meta data for certificate creation"

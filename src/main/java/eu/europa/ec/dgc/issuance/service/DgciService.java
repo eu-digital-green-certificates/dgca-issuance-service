@@ -61,10 +61,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -94,6 +92,7 @@ public class DgciService {
     private final ContextIdentifierService contextIdentifierService;
     private final CompressorService compressorService;
     private final Base45Service base45Service;
+    private final ExpirationService expirationService;
 
     private static final int MAX_CLAIM_RETRY_TAN = 3;
 
@@ -114,7 +113,7 @@ public class DgciService {
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
 
         ZonedDateTime now = ZonedDateTime.now();
-        ZonedDateTime expiration = now.plus(expirationForType(dgciInit.getGreenCertificateType()));
+        ZonedDateTime expiration = now.plus(expirationService.expirationForType(dgciInit.getGreenCertificateType()));
         long expirationSec = expiration.toInstant().getEpochSecond();
 
         dgciEntity.setExpiresAt(expiration);
@@ -138,36 +137,6 @@ public class DgciService {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    /**
-     * expiration duration for given edgc type.
-     * @param greenCertificateType edgc type
-     * @return Duration
-     */
-    public Duration expirationForType(GreenCertificateType greenCertificateType) {
-        Duration duration;
-        if (issuanceConfigProperties.getExpiration() != null) {
-            switch (greenCertificateType) {
-                case Test:
-                    duration = issuanceConfigProperties.getExpiration().getTest();
-                    break;
-                case Vaccination:
-                    duration = issuanceConfigProperties.getExpiration().getVaccination();
-                    break;
-                case Recovery:
-                    duration = issuanceConfigProperties.getExpiration().getRecovery();
-                    break;
-                default:
-                    throw new IllegalArgumentException("unsupported cert type for expiration: " + greenCertificateType);
-            }
-        } else {
-            duration = null;
-        }
-        if (duration == null) {
-            duration = Duration.of(365, ChronoUnit.DAYS);
-        }
-        return duration;
     }
 
     @NotNull
@@ -417,7 +386,7 @@ public class DgciService {
         dgciEntity.setHashedTan(tanService.hashTan(tan));
         dgciEntity.setGreenCertificateType(greenCertificateType);
         dgciEntity.setCreatedAt(ZonedDateTime.now());
-        dgciEntity.setExpiresAt(ZonedDateTime.now().plus(expirationForType(greenCertificateType)));
+        dgciEntity.setExpiresAt(ZonedDateTime.now().plus(expirationService.expirationForType(greenCertificateType)));
         dgciRepository.saveAndFlush(dgciEntity);
 
         return egdcCodeData;

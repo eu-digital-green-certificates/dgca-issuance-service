@@ -21,9 +21,11 @@
 package eu.europa.ec.dgc.issuance.restapi.dto;
 
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class DgciInit {
+    @NotNull
     private GreenCertificateType greenCertificateType;
 }
