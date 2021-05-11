@@ -20,14 +20,6 @@
 
 package eu.europa.ec.dgc.issuance.restapi.controller;
 
-import ehn.techiop.hcert.data.Eudgc;
-import ehn.techiop.hcert.kotlin.chain.Base45Service;
-import ehn.techiop.hcert.kotlin.chain.CborService;
-import ehn.techiop.hcert.kotlin.chain.Chain;
-import ehn.techiop.hcert.kotlin.chain.ChainResult;
-import ehn.techiop.hcert.kotlin.chain.CompressorService;
-import ehn.techiop.hcert.kotlin.chain.ContextIdentifierService;
-import ehn.techiop.hcert.kotlin.chain.CoseService;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgcDecodeResult;
 import eu.europa.ec.dgc.issuance.restapi.dto.PublicKeyInfo;
 import eu.europa.ec.dgc.issuance.service.CertificateService;
@@ -57,29 +49,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class CertController {
 
     private final CertificateService certificateService;
-    private final CborService cborService;
-    private final CoseService coseService;
-    private final ContextIdentifierService contextIdentifierService;
-    private final CompressorService compressorService;
-    private final Base45Service base45Service;
     private final CborDumpService cborDumpService;
     private final EdgcValidator edgcValidator;
-
-    /**
-     * Controller for creating Vaccination Certificate.
-     */
-    @Operation(
-        summary = "create edgc with process step information, developing tool"
-    )
-    @PostMapping(value = "create", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ChainResult> createVaccinationCertificate(@RequestBody Eudgc eudgc) {
-        Chain cborProcessingChain =
-            new Chain(cborService, coseService, contextIdentifierService, compressorService, base45Service);
-
-        ChainResult chainResult = cborProcessingChain.encode(eudgc);
-
-        return ResponseEntity.ok(chainResult);
-    }
 
     /**
      * Rest Controller to decode CBOR.
