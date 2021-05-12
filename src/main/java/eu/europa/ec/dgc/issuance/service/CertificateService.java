@@ -31,15 +31,23 @@ import java.util.Base64;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class CertificateService {
     private final CertificatePrivateKeyProvider certificatePrivateKeyProvider;
     private final SigningService signingService;
     private byte[] kid;
+
+    @Autowired
+    public CertificateService(@Qualifier("issuerKeyProvider") CertificatePrivateKeyProvider
+                                      certificatePrivateKeyProvider, SigningService signingService) {
+        this.certificatePrivateKeyProvider = certificatePrivateKeyProvider;
+        this.signingService = signingService;
+    }
 
     /**
      * compute kid.
@@ -48,7 +56,7 @@ public class CertificateService {
     @PostConstruct
     public void computeKid() {
         CertificateUtils certificateUtils = new CertificateUtils();
-        String kidBase64 = certificateUtils.getCertKid((X509Certificate)getCertficate());
+        String kidBase64 = certificateUtils.getCertKid(getCertficate());
         kid = Base64.getDecoder().decode(kidBase64);
     }
 

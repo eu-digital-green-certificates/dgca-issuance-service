@@ -1,0 +1,11 @@
+{
+  "id": "5f5fa34e-be21-4c7a-8548-4a538b7156ed",
+  "name": "key-name",
+  "modifiedAt": "2021-05-12T22:16:55.806Z",
+  "value": "SoMeBaSe64EnCoDeDkEy==",
+  "status": "enabled",
+  "username": "key-name",
+  "format": "X.509",
+  "category": "someCategory",
+  "type": "someType"
+}

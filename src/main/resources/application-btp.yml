@@ -1,0 +1,10 @@
+sap:
+  btp:
+    credstore:
+      namespace: DgcaIssuerServiceCredentialStore
+      encrypted: false
+      username: <replaced_by_cfenv>
+      password: <replaced_by_cfenv>
+      url: <replaced_by_cfenv>
+      clientPrivateKey: <replaced_by_cfenv>
+      serverPublicKey: <replaced_by_cfenv>

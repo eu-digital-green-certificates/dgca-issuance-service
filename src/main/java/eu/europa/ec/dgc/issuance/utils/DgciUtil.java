@@ -2,7 +2,6 @@ package eu.europa.ec.dgc.issuance.utils;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class DgciUtil {
