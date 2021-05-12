@@ -1,0 +1,25 @@
+dgc:
+  gateway:
+    connector:
+      enabled: true
+      endpoint: https://test-dgcg-ws.tech.ec.europa.eu
+      proxy:
+        enabled: false
+        host: sia-lb.telekom.de
+        port: 8080
+      max-cache-age: 0
+      tls-trust-store:
+        password: dgcg-p4ssw0rd
+        path: file:gateway/dgcg_tst_digit.p12
+      tls-key-store:
+        alias: 1
+        password: dgcg-p4ssw0rd
+        path: file:gateway/auth.p12
+      trust-anchor:
+        alias: ta_tst
+        password: dgcg-p4ssw0rd
+        path: file:gateway/ta_tst.jks
+      upload-key-store:
+        alias: upload
+        password: dgcg-p4ssw0rd
+        path: file:gateway/upload.p12
