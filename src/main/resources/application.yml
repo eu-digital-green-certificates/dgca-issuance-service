@@ -43,7 +43,7 @@ issuance:
   dgciPrefix: dgci:V1:DE
   keyStoreFile: certs/test.jks
   keyStorePassword: dgca
-  certAlias: edgc_dev_ec
+  certAlias: dev_ec
   privateKeyPassword: dgca
   countryCode: DE
   tanExpirationHours: 2
