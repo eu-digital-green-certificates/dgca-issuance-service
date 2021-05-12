@@ -21,8 +21,8 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
+import eu.europa.ec.dgc.issuance.utils.DgciUtil;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,15 +41,7 @@ public class DgciGenerator {
     public String newDgci() {
         StringBuilder sb = new StringBuilder();
         sb.append(issuanceConfigProperties.getDgciPrefix()).append(':');
-        // use uuid but encode to 0-9A-Z charset
-        UUID uuid = UUID.randomUUID();
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        BigInteger bint = new BigInteger(1, bb.array());
-        int radix = 10 + ('Z' - 'A');
-        String randomUuidEncoded = bint.toString(radix).toUpperCase();
-        sb.append(randomUuidEncoded);
+        sb.append(DgciUtil.encodeDgci(UUID.randomUUID()));
         String checkSum = createDgciCheckSum(sb.toString());
         sb.append(':').append(checkSum);
         return sb.toString();

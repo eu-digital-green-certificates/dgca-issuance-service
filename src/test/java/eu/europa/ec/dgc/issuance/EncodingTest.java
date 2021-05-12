@@ -20,34 +20,32 @@
 
 package eu.europa.ec.dgc.issuance;
 
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.Base64;
+import eu.europa.ec.dgc.issuance.utils.DgciUtil;
+import eu.europa.ec.dgc.issuance.utils.HashUtil;
 import java.util.UUID;
 import org.junit.Test;
 
-public class Sh256HashTest {
+import static org.junit.Assert.assertEquals;
+
+public class EncodingTest {
+
+    public static final String TEST_TAN = "U7ULCYZY";
+    public static final String TEST_TAN_HASHED = "avmGz38ugM7uBePwKKlvh3IB8+7O+WFhQEbjIxhTxgY=";
+
+    public static final String TEST_UUID = "cd7737d4-51ca-45f8-9f74-3a173b9a1f47";
+    public static final String TEST_DGCI_REP = "NW393C1D87A44870V7TTFQMYC";
+
     @Test
     public void testCreateSHA256Hash() throws Exception {
-        final MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        final byte[] hashbytes = digest.digest(
-            "some_data".getBytes(StandardCharsets.UTF_8));
-        System.out.println(Base64.getEncoder().encodeToString(hashbytes));
+        String output = HashUtil.sha256Base64(TEST_TAN);
+        assertEquals(TEST_TAN_HASHED, output);
     }
 
     @Test
     public void dgciEncoding() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        System.out.println(uuid.toString());
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        BigInteger bint = new BigInteger(1, bb.array());
-        int radix = 10+('Z'-'A');
-        String dgciRep = bint.toString(radix).toUpperCase();
-        System.out.println(dgciRep);
-        System.out.println(dgciRep.length());
+        UUID uuid = UUID.fromString(TEST_UUID);
+        String dgciRep = DgciUtil.encodeDgci(uuid);
+        assertEquals(25, dgciRep.length());
+        assertEquals(TEST_DGCI_REP, dgciRep);
     }
 }

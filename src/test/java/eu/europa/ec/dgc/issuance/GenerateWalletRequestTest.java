@@ -24,11 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import eu.europa.ec.dgc.issuance.restapi.dto.ClaimRequest;
 import eu.europa.ec.dgc.issuance.restapi.dto.PublicKey;
-import eu.europa.ec.dgc.issuance.service.TanService;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
@@ -40,15 +40,13 @@ public class GenerateWalletRequestTest {
     // This can be used to generate valid json structure for claim
     @Test
     public void testGenerateWalletRequest() throws Exception {
-        TanService tanService = new TanService();
-
         // Please adapt this to your certificate (the values can be get from browser network log
         // see POST /dgci
         // and PUT /dgci/{id}
         String dgci = "dgci:V1:DE:2e974b3b-d932-4bc9-bbae-d387f93f8bf3:edbcb873196f24be";
         String certHash = "mfg0MI7wPFexNkOa4n9OKojrzhe9a9lcim4JzJO3WtY=";
         String tan = "U7ULCYZY";
-        String tanHash = tanService.hashTan(tan);
+        String tanHash = "avmGz38ugM7uBePwKKlvh3IB8+7O+WFhQEbjIxhTxgY=";
 
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
         keyPairGen.initialize(2048);
@@ -72,6 +70,16 @@ public class GenerateWalletRequestTest {
         System.out.println(objectMapper.writeValueAsString(claimRequest));
     }
 
+    public static void main(String[] args) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hashBytes = digest.digest("U7ULCYZY".getBytes(StandardCharsets.UTF_8));
+            System.out.println(Base64.getEncoder().encodeToString(hashBytes));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     private void createClaimSignature(ClaimRequest claimRequest, PrivateKey privateKey, String sigAlg) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
         StringBuilder sigValue = new StringBuilder();
         sigValue.append(claimRequest.getTanHash())
@@ -86,15 +94,13 @@ public class GenerateWalletRequestTest {
 
     @Test
     public void testGenerateWalletRequestEC() throws Exception {
-        TanService tanService = new TanService();
-
         // Please adapt this to your certificate (the values can be get from browser network log
         // see POST /dgci
         // and PUT /dgci/{id}
         String dgci = "dgci:V1:DE:2e974b3b-d932-4bc9-bbae-d387f93f8bf3:edbcb873196f24be";
         String certHash = "mfg0MI7wPFexNkOa4n9OKojrzhe9a9lcim4JzJO3WtY=";
         String tan = "U7ULCYZY";
-        String tanHash = tanService.hashTan(tan);
+        String tanHash = "avmGz38ugM7uBePwKKlvh3IB8+7O+WFhQEbjIxhTxgY=";
 
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("EC");
         keyPairGen.initialize(256);
