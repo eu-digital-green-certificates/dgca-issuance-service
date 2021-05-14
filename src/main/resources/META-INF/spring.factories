@@ -1,0 +1,1 @@
+io.pivotal.cfenv.spring.boot.CfEnvProcessor=eu.europa.ec.dgc.issuance.config.btp.SapCredentialStoreCfEnvProcessor

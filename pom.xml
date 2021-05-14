@@ -124,6 +124,13 @@
         <artifactId>bcpkix-jdk15on</artifactId>
         <version>${bcpkix.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.sap.cloud.sdk</groupId>
+        <artifactId>sdk-bom</artifactId>
+        <version>3.43.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -255,6 +262,15 @@
       <groupId>io.pivotal.cfenv</groupId>
       <artifactId>java-cfenv-boot</artifactId>
       <version>2.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.6</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
+      <artifactId>scp-cf</artifactId>
     </dependency>
   </dependencies>
 

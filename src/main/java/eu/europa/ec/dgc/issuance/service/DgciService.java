@@ -49,6 +49,7 @@ import eu.europa.ec.dgc.issuance.restapi.dto.DidDocument;
 import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import eu.europa.ec.dgc.issuance.restapi.dto.IssueData;
 import eu.europa.ec.dgc.issuance.restapi.dto.SignatureData;
+import eu.europa.ec.dgc.issuance.utils.HashUtil;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -83,7 +84,6 @@ public class DgciService {
     }
 
     private final DgciRepository dgciRepository;
-    private final TanService tanService;
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
     private final DgciGenerator dgciGenerator;
@@ -107,7 +107,7 @@ public class DgciService {
         String dgci = generateDgci();
 
         dgciEntity.setDgci(dgci);
-        dgciEntity.setDgciHash(dgciHash(dgci));
+        dgciEntity.setDgciHash(HashUtil.sha256Base64(dgci));
         dgciEntity.setGreenCertificateType(dgciInit.getGreenCertificateType());
 
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
@@ -129,16 +129,6 @@ public class DgciService {
         );
     }
 
-    private String dgciHash(String dgci) {
-        try {
-            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            final byte[] hashBytes = digest.digest(dgci.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashBytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     @NotNull
     private String generateDgci() {
         return dgciGenerator.newDgci();
@@ -151,17 +141,17 @@ public class DgciService {
      * @param issueData issueData
      * @return signature data
      */
-    public SignatureData finishDgci(long dgciId, IssueData issueData) throws Exception {
+    public SignatureData finishDgci(long dgciId, IssueData issueData) {
         Optional<DgciEntity> dgciEntityOpt = dgciRepository.findById(dgciId);
         if (dgciEntityOpt.isPresent()) {
             var dgciEntity = dgciEntityOpt.get();
-            String tan = tanService.generateNewTan();
-            dgciEntity.setHashedTan(tanService.hashTan(tan));
+            Tan tan = Tan.create();
+            dgciEntity.setHashedTan(tan.getHashedTan());
             dgciEntity.setCertHash(issueData.getHash());
             dgciRepository.saveAndFlush(dgciEntity);
             log.info("signed for " + dgciId);
             String signatureBase64 = certificateService.signHash(issueData.getHash());
-            return new SignatureData(tan, signatureBase64);
+            return new SignatureData(tan.getRawTan(), signatureBase64);
         } else {
             log.warn("can not find dgci with id " + dgciId);
             throw new DgciNotFound("dgci with id " + dgciId + " not found");
@@ -264,13 +254,13 @@ public class DgciService {
             dgciEntity.setClaimed(true);
             dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
             dgciEntity.setPublicKey(asJwk(claimRequest.getPublicKey()));
-            String newTan = tanService.generateNewTan();
-            dgciEntity.setHashedTan(tanService.hashTan(newTan));
+            Tan newTan = Tan.create();
+            dgciEntity.setHashedTan(newTan.getHashedTan());
             dgciEntity.setRetryCounter(0);
             log.info("dgci {} claimed", dgciEntity.getDgci());
             dgciRepository.saveAndFlush(dgciEntity);
             ClaimResponse claimResponse = new ClaimResponse();
-            claimResponse.setTan(newTan);
+            claimResponse.setTan(newTan.getRawTan());
             return claimResponse;
         } else {
             log.info("can not find dgci {}", claimRequest.getDgci());
@@ -376,14 +366,14 @@ public class DgciService {
         EgdcCodeData egdcCodeData = new EgdcCodeData();
         egdcCodeData.setQrcCode(chainResult.getStep5Prefixed());
         egdcCodeData.setDgci(dgci);
-        String tan = tanService.generateNewTan();
-        egdcCodeData.setTan(tan);
+        Tan ta = Tan.create();
+        egdcCodeData.setTan(ta.getRawTan());
 
         DgciEntity dgciEntity = new DgciEntity();
         dgciEntity.setDgci(dgci);
         dgciEntity.setCertHash(Base64.getEncoder().encodeToString(computeCoseSignHash(chainResult.getStep2Cose())));
-        dgciEntity.setDgciHash(dgciHash(dgci));
-        dgciEntity.setHashedTan(tanService.hashTan(tan));
+        dgciEntity.setDgciHash(HashUtil.sha256Base64(dgci));
+        dgciEntity.setHashedTan(ta.getHashedTan());
         dgciEntity.setGreenCertificateType(greenCertificateType);
         dgciEntity.setCreatedAt(ZonedDateTime.now());
         dgciEntity.setExpiresAt(ZonedDateTime.now().plus(expirationService.expirationForType(greenCertificateType)));

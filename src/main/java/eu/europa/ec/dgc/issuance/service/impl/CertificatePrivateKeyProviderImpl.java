@@ -22,9 +22,11 @@ import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("issuerKeyProvider")
+@Profile("!btp")
 @Slf4j
 @RequiredArgsConstructor
 public class CertificatePrivateKeyProviderImpl implements CertificatePrivateKeyProvider {
