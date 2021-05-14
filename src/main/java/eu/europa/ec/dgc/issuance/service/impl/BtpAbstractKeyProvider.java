@@ -52,7 +52,14 @@ public abstract class BtpAbstractKeyProvider implements CertificatePrivateKeyPro
         String keyContent = cleanKeyString(key.getValue());
 
         try {
-            KeyFactory kf = KeyFactory.getInstance("RSA");
+            KeyFactory kf;
+            if ("EC".equals(key.getFormat())) {
+                kf = KeyFactory.getInstance("EC");
+            } else if ("RSA".equals(key.getFormat())) {
+                kf = KeyFactory.getInstance("RSA");
+            } else {
+                throw new IllegalArgumentException("");
+            }
             PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(keyContent));
             return kf.generatePrivate(pkcs8EncodedKeySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
