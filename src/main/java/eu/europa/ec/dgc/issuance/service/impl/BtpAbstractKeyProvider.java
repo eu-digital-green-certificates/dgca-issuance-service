@@ -12,7 +12,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,8 @@ import org.slf4j.LoggerFactory;
 public abstract class BtpAbstractKeyProvider implements CertificatePrivateKeyProvider {
 
     private static final Logger log = LoggerFactory.getLogger(BtpAbstractKeyProvider.class);
+
+    private static final List<String> ALLOWED_ALGORITHMS = Arrays.asList("EC", "RSA");
 
     protected final CredentialStore credentialStore;
 
@@ -49,11 +54,14 @@ public abstract class BtpAbstractKeyProvider implements CertificatePrivateKeyPro
 
     protected PrivateKey getPrivateKeyFromStore(String keyName) {
         SapCredential key = credentialStore.getKeyByName(keyName);
-        String keyContent = cleanKeyString(key.getValue());
+        if (!ALLOWED_ALGORITHMS.contains(key.getFormat())) {
+            throw new IllegalArgumentException("Key Format not supported: " + key.getFormat());
+        }
 
         try {
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(keyContent));
+            KeyFactory kf = KeyFactory.getInstance(key.getFormat());
+            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder()
+                .decode(cleanKeyString(key.getValue())));
             return kf.generatePrivate(pkcs8EncodedKeySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             log.error("Error building private key: {}", e.getMessage());
