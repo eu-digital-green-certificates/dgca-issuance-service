@@ -176,7 +176,7 @@ public class DgciService {
             if (dgciEntity.isClaimed()) {
                 DidAuthentication didAuthentication = new DidAuthentication();
                 didAuthentication.setController(dgciEntity.getDgci());
-                didAuthentication.setType("EcdsaSecp256k1VerificationKey2018");
+                didAuthentication.setType("EcdsaSecp256r1VerificationKey2019");
                 didAuthentication.setExpires(dgciEntity.getExpiresAt()
                     .toOffsetDateTime().format(
                         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
