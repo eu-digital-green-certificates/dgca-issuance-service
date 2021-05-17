@@ -65,6 +65,15 @@ The default database is in-memory H2 database and is usable for development only
 In the spring profile "cloud" see src/main/resources/application-cloud.yml there are example postgres database configured.
 Consult [spring boot manuals](https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-data-access) 
 
+# Context File
+Context file is used by wallet app for url pinning. It will be server at /context endpoint without any other modification.
+If the context file is not configured and empty context json will be returned.
+
+```
+issuance:
+   context: context.json
+```
+  
 # Configuring Connection to EDGC Gateway
 The connection to EDGC is optional.
 The application uses DGC Gateway connector from dgc-lib to configure and use the dgc-gateway. 

@@ -44,7 +44,7 @@ public class ContextService {
             JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
             ObjectNode contextObj = jsonNodeFactory.objectNode();
             contextObj.set("Origin", jsonNodeFactory.textNode(issuanceConfigProperties.getCountryCode()));
-            contextObj.set("claimEndpoints", jsonNodeFactory.arrayNode());
+            contextObj.set("versions", jsonNodeFactory.objectNode());
             contextDefinition = contextObj;
         }
     }

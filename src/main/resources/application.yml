@@ -47,6 +47,7 @@ issuance:
   privateKeyPassword: dgca
   countryCode: DE
   tanExpirationHours: 2
+  contextFile: context/context.json
   expiration:
     vaccination: 365
     recoverty: 365
