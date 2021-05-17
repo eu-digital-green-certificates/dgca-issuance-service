@@ -32,7 +32,7 @@
     <spring.security.version>5.4.6</spring.security.version>
     <lombok.version>1.18.20</lombok.version>
     <liquibase.version>4.3.3</liquibase.version>
-    <hcert-kotlin.version>0.2.0-SNAPSHOT</hcert-kotlin.version>
+    <hcert-kotlin.version>0.2.2-SNAPSHOT</hcert-kotlin.version>
     <springdoc.version>1.5.7</springdoc.version>
     <junit.version>5.7.1</junit.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>

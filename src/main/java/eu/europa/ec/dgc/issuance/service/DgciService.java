@@ -346,17 +346,23 @@ public class DgciService {
     public EgdcCodeData createEdgc(Eudgc eudgc) {
         String dgci = dgciGenerator.newDgci();
         GreenCertificateType greenCertificateType = GreenCertificateType.Vaccination;
-        for (val v : eudgc.getR()) {
-            v.setCi(dgci);
-            greenCertificateType = GreenCertificateType.Recovery;
+        if (eudgc.getR() != null) {
+            for (val v : eudgc.getR()) {
+                v.setCi(dgci);
+                greenCertificateType = GreenCertificateType.Recovery;
+            }
         }
-        for (val v : eudgc.getT()) {
-            v.setCi(dgci);
-            greenCertificateType = GreenCertificateType.Test;
+        if (eudgc.getT() != null) {
+            for (val v : eudgc.getT()) {
+                v.setCi(dgci);
+                greenCertificateType = GreenCertificateType.Test;
+            }
         }
-        for (val v : eudgc.getV()) {
-            v.setCi(dgci);
-            greenCertificateType = GreenCertificateType.Vaccination;
+        if (eudgc.getV() != null) {
+            for (val v : eudgc.getV()) {
+                v.setCi(dgci);
+                greenCertificateType = GreenCertificateType.Vaccination;
+            }
         }
         Chain cborProcessingChain =
             new Chain(cborService, coseService,
