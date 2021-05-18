@@ -22,9 +22,8 @@ package eu.europa.ec.dgc.issuance.service;
 
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.utils.DgciUtil;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +31,25 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DgciGenerator {
     private final IssuanceConfigProperties issuanceConfigProperties;
+
+    private static final String CODE_POINTS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/:";
+
+    /**
+     * Check if dgci prefix contains character suitable for checksum calculation.
+     */
+    @PostConstruct
+    public void checkPrefix() {
+        String dgciPrefix = issuanceConfigProperties.getDgciPrefix();
+        if (dgciPrefix != null) {
+            for (int i = 0;i < dgciPrefix.length();i++) {
+                if (CODE_POINTS.indexOf(dgciPrefix.charAt(i)) < 0) {
+                    throw new IllegalArgumentException("configured DGCI prefix '"
+                        + dgciPrefix + "' contains invalid character '"
+                        + dgciPrefix.charAt(i) + "' only following are supported " + CODE_POINTS);
+                }
+            }
+        }
+    }
 
     /**
      * Generates a new DGCI.
@@ -42,18 +60,47 @@ public class DgciGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(issuanceConfigProperties.getDgciPrefix()).append(':');
         sb.append(DgciUtil.encodeDgci(UUID.randomUUID()));
-        String checkSum = createDgciCheckSum(sb.toString());
-        sb.append(':').append(checkSum);
+        sb.append(generateCheckCharacter(sb.toString()));
         return sb.toString();
     }
 
-    private String createDgciCheckSum(String dgciRaw) {
-        BigInteger dgciRawAsNumber = new BigInteger(1, dgciRaw.getBytes(StandardCharsets.UTF_8));
-        BigInteger modValue = dgciRawAsNumber.mod(BigInteger.valueOf(97));
-        String checkSum = modValue.toString();
-        if (checkSum.length() == 1) {
-            checkSum = '0' + checkSum;
+    // see https://en.wikipedia.org/wiki/Luhn_mod_N_algorithm
+    private char generateCheckCharacter(String input) {
+        int factor = 2;
+        int sum = 0;
+        int n = CODE_POINTS.length();
+
+        // Starting from the right and working leftwards is easier since
+        // the initial "factor" will always be "2".
+        for (int i = input.length() - 1; i >= 0; i--) {
+            int codePoint = codePointFromCharacter(input.charAt(i));
+            int addend = factor * codePoint;
+
+            // Alternate the "factor" that each "codePoint" is multiplied by
+            factor = (factor == 2) ? 1 : 2;
+
+            // Sum the digits of the "addend" as expressed in base "n"
+            addend = (addend / n) + (addend % n);
+            sum += addend;
         }
-        return checkSum;
+
+        // Calculate the number that must be added to the "sum"
+        // to make it divisible by "n".
+        int remainder = sum % n;
+        int checkCodePoint = (n - remainder) % n;
+
+        return characterFromCodePoint(checkCodePoint);
+    }
+
+    private char characterFromCodePoint(int checkCodePoint) {
+        return CODE_POINTS.charAt(checkCodePoint);
+    }
+
+    private int codePointFromCharacter(char charAt) {
+        int codePoint = CODE_POINTS.indexOf(charAt);
+        if (codePoint < 0) {
+            throw new IllegalArgumentException("unsupported character for checksum: " + charAt);
+        }
+        return codePoint;
     }
 }
