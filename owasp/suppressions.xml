@@ -26,4 +26,11 @@
     <cve>CVE-2018-1272</cve>
     <cve>CVE-2020-5421</cve>
   </suppress>
+  <suppress>
+    <notes>the issues was fixed in used kotlin version 1.4.31</notes>
+    <cve>CVE-2020-29582</cve>
+    <cve>CVE-2019-10102</cve>
+    <cve>CVE-2019-10101</cve>
+    <cve>CVE-2019-10103</cve>
+  </suppress>
 </suppressions>
