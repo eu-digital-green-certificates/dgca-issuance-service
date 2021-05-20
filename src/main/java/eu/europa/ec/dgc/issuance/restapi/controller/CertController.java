@@ -39,9 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The endpoint here are not public API and should be used only for developing testing
- * purposes.
- * Only available for spring dev profile
+ * The endpoint here are not public API and should be used only for developing testing purposes.
  */
 @RestController
 @RequestMapping("/cert")
@@ -74,7 +72,6 @@ public class CertController {
      *
      * @param prefixedEncodedCompressedCose edgc
      * @return decode result
-     * @throws IOException IOException
      */
     @Operation(
         summary = "decode edgc, developing tool",
@@ -82,7 +79,7 @@ public class CertController {
     )
     @PostMapping(value = "decodeEGC", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EgcDecodeResult> decodeEgCert(
-        @RequestBody String prefixedEncodedCompressedCose) throws IOException {
+        @RequestBody String prefixedEncodedCompressedCose) {
 
         EgcDecodeResult egcDecodeResult = edgcValidator.decodeEdgc(prefixedEncodedCompressedCose);
         return ResponseEntity.ok(egcDecodeResult);

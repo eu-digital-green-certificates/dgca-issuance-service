@@ -11,7 +11,19 @@
     <cve>CVE-2012-5055</cve>
   </suppress>
   <suppress>
-    <notes>see https://tomcat.apache.org/security-9.html#Apache_Tomcat_9.x_vulnerabilities vulnerability is fixed in tomcat 9.0.38</notes>
+    <notes>see https://tomcat.apache.org/security-9.html#Apache_Tomcat_9.x_vulnerabilities vulnerability is fixed in
+      tomcat 9.0.38
+    </notes>
     <cve>CVE-2020-13943</cve>
+  </suppress>
+  <suppress>
+    <!-- spring-boot and spring are excluded from cfenv artifact. Related issues can be omitted. -->
+    <notes><![CDATA[file name: java-cfenv-boot-2.3.0.jar]]></notes>
+    <sha1>da214a6f44ee5811c97f3b53a6dda31edf25ac9e</sha1>
+    <cve>CVE-2016-9878</cve>
+    <cve>CVE-2018-1270</cve>
+    <cve>CVE-2018-1271</cve>
+    <cve>CVE-2018-1272</cve>
+    <cve>CVE-2020-5421</cve>
   </suppress>
 </suppressions>

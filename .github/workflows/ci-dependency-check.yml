@@ -1,0 +1,40 @@
+name: ci-main
+on:
+  schedule:
+    - cron: '0 1 * * 0' # Each Sunday at 01:00 UTC
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/setup-java@v2
+      with:
+        java-version: 11
+        distribution: adopt
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+        key: ${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+    - name: version
+      run: |-
+        APP_SHA=$(git rev-parse --short ${GITHUB_SHA})
+        APP_LATEST_REV=$(git rev-list --tags --max-count=1)
+        APP_LATEST_TAG=$(git describe --tags ${APP_LATEST_REV} 2> /dev/null || echo 0.0.0)
+        echo "APP_VERSION=${APP_LATEST_TAG}-${APP_SHA}" >> ${GITHUB_ENV}
+    - name: mvn
+      run: |-
+        mvn dependency-check:check \
+        --batch-mode \
+        --file ./pom.xml \
+        --settings ./settings.xml \
+        --define app.packages.username="${APP_PACKAGES_USERNAME}" \
+        --define app.packages.password="${APP_PACKAGES_PASSWORD}" \
+      env:
+        APP_PACKAGES_USERNAME: ${{ github.actor }}
+        APP_PACKAGES_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
