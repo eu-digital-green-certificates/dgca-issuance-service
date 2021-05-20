@@ -11,7 +11,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
 issuance:
-  dgciPrefix: dgci:V1:DE
+  dgciPrefix: URN:UVCI:V1:DE
   keyStoreFile: certs/test.jks
   keyStorePassword: dgca
   certAlias: edgc_dev_ec

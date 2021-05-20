@@ -40,7 +40,7 @@ springdoc:
   swagger-ui:
     path: /swagger
 issuance:
-  dgciPrefix: dgci:V1:DE
+  dgciPrefix: URN:UVCI:V1:DE
   keyStoreFile: certs/test.jks
   keyStorePassword: dgca
   certAlias: dev_ec

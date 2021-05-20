@@ -30,11 +30,12 @@ public class DgciGeneratorTest {
     @Test
     public void testGenerateDGCI() throws Exception {
         IssuanceConfigProperties issuanceConfigProperties = new IssuanceConfigProperties();
-        issuanceConfigProperties.setDgciPrefix("dgci:V1:DE");
+        issuanceConfigProperties.setDgciPrefix("URN:UVCI:V1:DE");
         DgciGenerator dgciGenerator = new DgciGenerator(issuanceConfigProperties);
         String dgci = dgciGenerator.newDgci();
         assertNotNull(dgci);
         assertTrue(dgci.startsWith(issuanceConfigProperties.getDgciPrefix()));
+        assertTrue("dgci too long",dgci.length() <= 50);
         System.out.println(dgci);
     }
 }
