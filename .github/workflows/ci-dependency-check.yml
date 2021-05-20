@@ -1,4 +1,4 @@
-name: ci-main
+name: ci-dependency-check
 on:
   schedule:
     - cron: '0 1 * * 0' # Each Sunday at 01:00 UTC
