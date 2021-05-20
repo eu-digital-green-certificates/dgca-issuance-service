@@ -30,8 +30,9 @@ public class SapCredentialStoreCfEnvProcessor implements CfEnvProcessor {
 
     @Override
     public boolean accept(CfService service) {
-        return service.existsByTagIgnoreCase("credstore", "securestore", "keystore", "credentials")
-            || service.existsByLabelStartsWith("credstore") || service.existsByUriSchemeStartsWith(CRED_STORE_SCHEME);
+        return service.existsByTagIgnoreCase(CRED_STORE_SCHEME, "securestore", "keystore", "credentials")
+            || service.existsByLabelStartsWith(CRED_STORE_SCHEME)
+            || service.existsByUriSchemeStartsWith(CRED_STORE_SCHEME);
     }
 
     @Override
