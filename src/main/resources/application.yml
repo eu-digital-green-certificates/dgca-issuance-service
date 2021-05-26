@@ -52,6 +52,13 @@ issuance:
     vaccination: 365
     recoverty: 365
     test: 60
+  endpoints:
+    frontendIssuing: true
+    backendIssuing: false
+    testTools: false
+    wallet: true
+    publishCert: true
+    did: true
 dgc:
   gateway:
     connector:

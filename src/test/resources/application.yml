@@ -18,6 +18,13 @@ issuance:
   privateKeyPassword: dgca
   countryCode: DE
   tanExpirationHours: 24
+  endpoints:
+    frontendIssuing: true
+    backendIssuing: true
+    testTools: true
+    wallet: true
+    publishCert: true
+    did: true
 springdoc:
   api-docs:
     path: /api/docs

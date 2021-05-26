@@ -110,15 +110,15 @@ public class DgciService {
         dgciEntity.setDgciHash(HashUtil.sha256Base64(dgci));
         dgciEntity.setGreenCertificateType(dgciInit.getGreenCertificateType());
 
-        log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
-
         ZonedDateTime now = ZonedDateTime.now();
         ZonedDateTime expiration = now.plus(expirationService.expirationForType(dgciInit.getGreenCertificateType()));
-        long expirationSec = expiration.toInstant().getEpochSecond();
 
         dgciEntity.setExpiresAt(expiration);
         dgciRepository.saveAndFlush(dgciEntity);
 
+        log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
+
+        long expirationSec = expiration.toInstant().getEpochSecond();
         return new DgciIdentifier(
             dgciEntity.getId(),
             dgci,
