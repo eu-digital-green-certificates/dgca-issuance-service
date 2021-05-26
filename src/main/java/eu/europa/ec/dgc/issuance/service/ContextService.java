@@ -11,11 +11,13 @@ import java.io.IOException;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnExpression("${issuance.endpoints.wallet:false}")
 public class ContextService {
     private final IssuanceConfigProperties issuanceConfigProperties;
     private JsonNode contextDefinition;

@@ -2,7 +2,7 @@
 
 # Introduction
 Issuance Service is developed as self-contained spring boot application.
-The issuance application consist of 2 part
+The issuance application consist of 2 parts
  * dgca-issuance-service - this spring boot application. Backend application that serves services as REST Endpoints.
  * [dgca-issuance-web](https://github.com/eu-digital-green-certificates/dgca-issuance-web) - Web frontend programmed using React framework
 The documentation here concern only dgca-issuance-service
@@ -15,7 +15,7 @@ This default configuration is set to enable easy start of application out-of-the
 it is not usable for productive environment and miss some functionality.
 * usage of in-memory h2 database - all data are lost by restart
 * use public test keystore for signing - see certs/test.jks
-* no connection to dgc-gateway - no publish key endpoint is not usable
+* no connection to dgc-gateway - the publish key endpoint is not usable
 
 # Configuring Signing Keys for EDGC (European Green Certificate)
 The issuance service needs private-public key to sign the EDGC.
@@ -73,6 +73,32 @@ If the context file is not configured and empty context json will be returned.
 issuance:
    context: context.json
 ```
+
+# Enabling and Disabling Endpoints
+
+The endpoints are grouped by functions and can be enabled or disabled per configuration.
+Default configuration for endpoints.
+
+```
+issuance:
+  endpoints:
+    frontendIssuing: true
+    backendIssuing: false
+    testTools: false
+    wallet: true
+    publishCert: true
+    did: true
+```
+
+| group           | endpoints                 |
+| ----------------|-------------------------- |
+| frontendIssuing | `POST /dgci`<br/> `PUT /dgci/{id}` |
+| backendIssuing | `PUT /dgci` |
+| testTools | `POST /cert/dumpCBOR`<br> `POST /cert/decodeEGC`<br> `GET /cert/publicKey` |
+| wallet | `POST /dgci/wallet/claim` |
+| publishCert | `POST /dgci/certPublish` |
+| did | `HEAD /dgci/{dgciHash}`<br/> `GET /dgci/{dgciHash}` |
+
   
 # Configuring Connection to EDGC Gateway
 The connection to EDGC is optional.

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 public class DgciControllerTest {
     @Autowired
-    DgciController dgciController;
+    DgciBackendController dgciController;
 
     @Test
     void checkBackendIssuing() throws Exception {

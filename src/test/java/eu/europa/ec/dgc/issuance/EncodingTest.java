@@ -20,11 +20,15 @@
 
 package eu.europa.ec.dgc.issuance;
 
+import com.nimbusds.jose.util.Base64URL;
 import eu.europa.ec.dgc.issuance.utils.DgciUtil;
 import eu.europa.ec.dgc.issuance.utils.HashUtil;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.UUID;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public class EncodingTest {
@@ -47,5 +51,15 @@ public class EncodingTest {
         String dgciRep = DgciUtil.encodeDgci(uuid);
         assertEquals(25, dgciRep.length());
         assertEquals(TEST_DGCI_REP, dgciRep);
+    }
+
+    @Test
+    public void testBase64URL() throws Exception {
+        String dgci= "URN:UVCI:V1:DE:NW513NLDH01JY3JCMU4M67WOHA";
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(dgci.getBytes(StandardCharsets.UTF_8));
+        String hashBase64URL = Base64URL.encode(hash).toString();
+        System.out.println(hashBase64URL);
+        assertArrayEquals(hash,Base64URL.from(hashBase64URL).decode());
     }
 }

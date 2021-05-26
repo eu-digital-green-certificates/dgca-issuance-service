@@ -67,4 +67,16 @@ public class IssuanceConfigProperties {
         private Duration test;
     }
 
+    @Getter
+    @Setter
+    @NotNull
+    public static class Endpoints {
+        private boolean frontendIssuing;
+        private boolean backendIssuing;
+        private boolean testTools;
+        private boolean wallet;
+        private boolean publishCert;
+        private boolean did;
+    }
+
 }
