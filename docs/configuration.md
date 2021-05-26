@@ -73,6 +73,32 @@ If the context file is not configured and empty context json will be returned.
 issuance:
    context: context.json
 ```
+
+# Configuring Enabling Endpoints
+
+The endpoints are grouped in functions and can be enabled or disabled per configuration.
+Default configuration for endpoints.
+
+```
+issuance:
+  endpoints:
+    frontendIssuing: true
+    backendIssuing: false
+    testTools: false
+    wallet: true
+    publishCert: true
+    did: true
+```
+
+| group           | endpoints                 |
+| ----------------|-------------------------- |
+| frontendIssuing | POST /dgci<br/> PUT /dgci/{id} |
+| backendIssuing | PUT /dgci |
+| testTools | POST /cert/dumpCBOR<br>POST /cert/decodeEGC<br>GET /cert/publicKey |
+| wallet | POST /dgci/wallet/claim |
+| publishCert | POST /dgci/certPublish |
+| did | HEAD /dgci/{dgciHash}<br/>GET /dgci/{dgciHash} |
+
   
 # Configuring Connection to EDGC Gateway
 The connection to EDGC is optional.
