@@ -28,6 +28,7 @@ import java.security.MessageDigest;
 import java.util.UUID;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public class EncodingTest {
@@ -57,6 +58,8 @@ public class EncodingTest {
         String dgci= "URN:UVCI:V1:DE:NW513NLDH01JY3JCMU4M67WOHA";
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(dgci.getBytes(StandardCharsets.UTF_8));
-        System.out.println(Base64URL.encode(hash).toString());
+        String hashBase64URL = Base64URL.encode(hash).toString();
+        System.out.println(hashBase64URL);
+        assertArrayEquals(hash,Base64URL.from(hashBase64URL).decode());
     }
 }
