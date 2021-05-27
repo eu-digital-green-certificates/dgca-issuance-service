@@ -275,7 +275,6 @@ class DgciServiceTest {
         String hash64 = "ZALr2hyVD4l5veh7+Auq78TQeS4PKOMAgVyy4GVSi9g=";
         DgciInit dgciInit = new DgciInit();
         dgciInit.setGreenCertificateType(GreenCertificateType.Vaccination);
-        DgciIdentifier dgciIdentifier = dgciService.initDgci(dgciInit);
 
         java.security.interfaces.ECPublicKey pubKey = (java.security.interfaces.ECPublicKey) certificateService.getPublicKey();
         AsymmetricKeyParameter keyParameter = ECUtil.generatePublicKeyParameter(pubKey);
@@ -286,6 +285,7 @@ class DgciServiceTest {
         IssueData issueData = new IssueData();
         // Try more time to get all possible byte paddings options
         for (int i = 0;i<1000;i++) {
+            DgciIdentifier dgciIdentifier = dgciService.initDgci(dgciInit);
             Random rnd = new Random();
             byte[] hash = new byte[32];
             rnd.nextBytes(hash);
