@@ -67,7 +67,7 @@ public class DgciController {
         @ApiResponse(responseCode = "404", description = "dgci with related id not found"),
         @ApiResponse(responseCode = "400", description = "wrong issue data")})
     @PutMapping(value = "/issue/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SignatureData> finalizeDgci(@PathVariable long id, @Valid @RequestBody IssueData issueData)
+    public ResponseEntity<SignatureData> finalizeDgci(@PathVariable String id, @Valid @RequestBody IssueData issueData)
         throws Exception {
         return ResponseEntity.ok(dgciService.finishDgci(id, issueData));
     }

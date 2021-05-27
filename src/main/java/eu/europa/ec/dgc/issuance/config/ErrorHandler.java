@@ -22,6 +22,7 @@ package eu.europa.ec.dgc.issuance.config;
 
 import eu.europa.ec.dgc.issuance.restapi.dto.ProblemReportDto;
 import eu.europa.ec.dgc.issuance.service.DdcGatewayException;
+import eu.europa.ec.dgc.issuance.service.DgciConflict;
 import eu.europa.ec.dgc.issuance.service.DgciNotFound;
 import eu.europa.ec.dgc.issuance.service.WrongRequest;
 import javax.validation.ConstraintViolationException;
@@ -71,6 +72,18 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
             .status(HttpStatus.NOT_FOUND)
             .contentType(MediaType.APPLICATION_JSON)
             .body(new ProblemReportDto("", "DGCI not found", "", e.getMessage()));
+    }
+
+    /**
+     * Exception Handler to handle {@link DgciConflict} Exceptions.
+     */
+    @ExceptionHandler(DgciConflict.class)
+    public ResponseEntity<ProblemReportDto> handleException(DgciConflict e) {
+        log.error(e.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ProblemReportDto("", "DGCI conflict", "", e.getMessage()));
     }
 
     /**
