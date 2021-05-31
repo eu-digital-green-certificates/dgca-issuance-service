@@ -1,5 +1,5 @@
 <h1 align="center">
-    EU Digital Green Certificates Issuance Service
+    EU Digital COVID Certificate Issuance Service
 </h1>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ## About
 
-This repository contains the source code of the Digital Green Certificates Issuance Service.
+This repository contains the source code of the EU Digital COVID Certificate Issuance Service.
 
 The issuer backend is accessed by the [issuer web frontend](https://github.com/eu-digital-green-certificates/dgca-issuance-web) and the respective wallet apps ( [Android](https://github.com/eu-digital-green-certificates/dgca-wallet-app-android), [iOS](https://github.com/eu-digital-green-certificates/dgca-wallet-app-ios) ) of the same member state. The backend itself publishes its public keys to the [DGCG](https://github.com/eu-digital-green-certificates/dgc-gateway) where they can be distributed to other member states. Each member state hosts its own issuer backend. The main function of the backend is to provide services for creating and signing new green certificates. 
 
