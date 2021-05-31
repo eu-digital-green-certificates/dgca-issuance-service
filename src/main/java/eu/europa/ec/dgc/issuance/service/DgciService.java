@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.util.Base64URL;
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 import ehn.techiop.hcert.data.Eudgc;
@@ -78,6 +79,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DgciService {
+    private static final String ID_SEP = "_";
 
     public enum DgciStatus {
         EXISTS, NOT_EXISTS, LOCKED
@@ -119,8 +121,12 @@ public class DgciService {
         log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
 
         long expirationSec = expiration.toInstant().getEpochSecond();
+        byte[] dgciHash = Base64.getDecoder().decode(dgciEntity.getDgciHash());
+        // We need Base64URL encoding because Base64 contains slashes that are not allowed
+        // by tomcat
+        String id = dgciEntity.getId().toString() + ID_SEP + Base64URL.encode(dgciHash);
         return new DgciIdentifier(
-            dgciEntity.getId(),
+            id,
             dgci,
             certificateService.getKidAsBase64(),
             certificateService.getAlgorithmIdentifier(),
@@ -141,9 +147,22 @@ public class DgciService {
      * @param issueData issueData
      * @return signature data
      */
-    public SignatureData finishDgci(long dgciId, IssueData issueData) {
-        Optional<DgciEntity> dgciEntityOpt = dgciRepository.findById(dgciId);
+    public SignatureData finishDgci(String dgciId, IssueData issueData) {
+        int colIdx = dgciId.indexOf(ID_SEP);
+        if (colIdx < 0) {
+            throw new WrongRequest("id unknown");
+        }
+        long id = Long.parseLong(dgciId.substring(0,colIdx));
+        byte[] dgciHash = Base64URL.from(dgciId.substring(colIdx + 1)).decode();
+        String dgciHashBase64 = Base64.getEncoder().encodeToString(dgciHash);
+        Optional<DgciEntity> dgciEntityOpt = dgciRepository.findById(id);
         if (dgciEntityOpt.isPresent()) {
+            if (dgciEntityOpt.get().getCertHash() != null) {
+                throw new DgciConflict("already signed");
+            }
+            if (!dgciEntityOpt.get().getDgciHash().equals(dgciHashBase64)) {
+                throw new DgciNotFound("dgci not found");
+            }
             var dgciEntity = dgciEntityOpt.get();
             Tan tan = Tan.create();
             dgciEntity.setHashedTan(tan.getHashedTan());
