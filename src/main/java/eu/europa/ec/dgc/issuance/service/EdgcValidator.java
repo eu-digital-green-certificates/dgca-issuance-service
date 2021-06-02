@@ -76,6 +76,11 @@ public class EdgcValidator {
             CBORObject protectedHeader = message.getProtectedAttributes();
             egcDecodeResult.setCoseProtected(protectedHeader.toString());
             egcDecodeResult.setCoseProtectedJson(cborToJson(protectedHeader));
+
+            CBORObject unprotectedHeader = message.getUnprotectedAttributes();
+            egcDecodeResult.setCoseUnprotected(unprotectedHeader.toString());
+            egcDecodeResult.setCoseUnprotectedJson(cborToJson(unprotectedHeader));
+
             validateCosePayload(errorMessages, certData);
         } catch (CBORException cborException) {
             errorMessages.append("CBOR decode exception: ").append(cborException.getMessage());
