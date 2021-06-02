@@ -13,5 +13,7 @@ public class EgcDecodeResult {
     private String coseHex;
     private String coseProtected;
     private JsonNode coseProtectedJson;
+    private String coseUnprotected;
+    private JsonNode coseUnprotectedJson;
     private String errorMessage;
 }
