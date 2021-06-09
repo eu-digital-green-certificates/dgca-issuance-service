@@ -50,7 +50,7 @@ issuance:
   contextFile: context/context.json
   expiration:
     vaccination: 365
-    recoverty: 365
+    recovery: 365
     test: 3
   endpoints:
     frontendIssuing: true

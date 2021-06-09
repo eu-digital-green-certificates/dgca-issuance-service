@@ -52,7 +52,7 @@ issuance:
    tanExpirationHours: 2
    expiration:
       vaccination: 365
-      recoverty: 365
+      recovery: 365
       test: 60
 ```
 
