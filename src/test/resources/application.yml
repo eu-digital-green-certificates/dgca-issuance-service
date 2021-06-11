@@ -18,6 +18,10 @@ issuance:
   privateKeyPassword: dgca
   countryCode: DE
   tanExpirationHours: 24
+  expiration:
+    vaccination: 365
+    recovery: 365
+    test: 3
   endpoints:
     frontendIssuing: true
     backendIssuing: true
