@@ -6,9 +6,6 @@ import com.upokecenter.cbor.CBORObject;
 import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.impl.DefaultCborService;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
-import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -38,22 +35,12 @@ public class ConfigurableCborService extends DefaultCborService {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
-        GreenCertificateType greenCertificateType;
-        if (input.getT() != null && !input.getT().isEmpty()) {
-            greenCertificateType = GreenCertificateType.Test;
-        } else if (input.getR() != null && !input.getR().isEmpty()) {
-            greenCertificateType = GreenCertificateType.Recovery;
-        } else {
-            greenCertificateType = GreenCertificateType.Vaccination;
-        }
-        long issueTime = Instant.now().getEpochSecond();
-        long expirationTime = issueTime
-            + expirationService.expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
+        ExpirationService.CwtTimeFields cwtTimes = expirationService.calculateCwtExpiration(input);
         CBORObject coseContainer = CBORObject.NewMap();
         coseContainer.set(CBORObject.FromObject(ISSUER),
             CBORObject.FromObject(issuanceConfigProperties.getCountryCode()));
-        coseContainer.set(CBORObject.FromObject(ISSUED_AT),CBORObject.FromObject(issueTime));
-        coseContainer.set(CBORObject.FromObject(EXPIRATION),CBORObject.FromObject(expirationTime));
+        coseContainer.set(CBORObject.FromObject(ISSUED_AT),CBORObject.FromObject(cwtTimes.getIssuedAt()));
+        coseContainer.set(CBORObject.FromObject(EXPIRATION),CBORObject.FromObject(cwtTimes.getExpiration()));
         CBORObject hcert = CBORObject.NewMap();
         hcert.set(CBORObject.FromObject(HCERT_VERSION),CBORObject.DecodeFromBytes(cbor));
         coseContainer.set(CBORObject.FromObject(HCERT),hcert);

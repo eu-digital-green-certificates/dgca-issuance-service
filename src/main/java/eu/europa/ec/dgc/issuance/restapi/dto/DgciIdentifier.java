@@ -32,4 +32,5 @@ public class DgciIdentifier {
     private int algId;
     private String countryCode;
     private long expired;
+    private long expiredDuration;
 }

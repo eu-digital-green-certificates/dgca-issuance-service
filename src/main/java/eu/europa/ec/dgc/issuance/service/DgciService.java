@@ -63,8 +63,10 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -113,7 +115,8 @@ public class DgciService {
         dgciEntity.setGreenCertificateType(dgciInit.getGreenCertificateType());
 
         ZonedDateTime now = ZonedDateTime.now();
-        ZonedDateTime expiration = now.plus(expirationService.expirationForType(dgciInit.getGreenCertificateType()));
+        Duration expirationDuration = expirationService.expirationForType(dgciInit.getGreenCertificateType());
+        ZonedDateTime expiration = now.plus(expirationDuration);
 
         dgciEntity.setExpiresAt(expiration);
         dgciRepository.saveAndFlush(dgciEntity);
@@ -131,7 +134,8 @@ public class DgciService {
             certificateService.getKidAsBase64(),
             certificateService.getAlgorithmIdentifier(),
             issuanceConfigProperties.getCountryCode(),
-            expirationSec
+            expirationSec,
+            expirationDuration.get(ChronoUnit.SECONDS)
         );
     }
 
