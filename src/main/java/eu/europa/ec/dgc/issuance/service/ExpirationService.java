@@ -1,6 +1,6 @@
 package eu.europa.ec.dgc.issuance.service;
 
-import ehn.techiop.hcert.data.Eudgc;
+import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import java.time.Duration;
@@ -55,13 +55,14 @@ public class ExpirationService {
      * @param eudgc json data of dgc
      * @return the times
      */
-    public CwtTimeFields calculateCwtExpiration(Eudgc eudgc) {
+    public CwtTimeFields calculateCwtExpiration(GreenCertificate eudgc) {
         CwtTimeFields result = new CwtTimeFields();
         GreenCertificateType greenCertificateType;
         long expirationTime;
         long issueTime = Instant.now().getEpochSecond();
         long expirationStartTime = issueTime;
 
+        /*
         if (eudgc.getT() != null && !eudgc.getT().isEmpty()) {
             greenCertificateType = GreenCertificateType.Test;
             expirationStartTime = extractTimesSec(eudgc.getT().get(0).getSc(),expirationStartTime);
@@ -75,10 +76,12 @@ public class ExpirationService {
             expirationStartTime = extractTimesSec(eudgc.getV().get(0).getDt(),expirationStartTime);
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
         } else {
+
+         */
             // fallback
             greenCertificateType = GreenCertificateType.Vaccination;
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
-        }
+        //}
         result.setIssuedAt(issueTime);
         result.setExpiration(expirationTime);
         return result;

@@ -27,6 +27,9 @@ import COSE.OneKey;
 import com.upokecenter.cbor.CBORObject;
 import ehn.techiop.hcert.kotlin.chain.CryptoService;
 import ehn.techiop.hcert.kotlin.chain.VerificationResult;
+import ehn.techiop.hcert.kotlin.crypto.CertificateAdapter;
+import ehn.techiop.hcert.kotlin.crypto.JvmPrivKey;
+import ehn.techiop.hcert.kotlin.crypto.PrivKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateCrtKey;
@@ -66,12 +69,8 @@ public class EhdCryptoService implements CryptoService {
     }
 
     @Override
-    public COSE.OneKey getCborSigningKey() {
-        try {
-            return new OneKey(cert.getPublicKey(), privateKey);
-        } catch (CoseException e) {
-            throw new RuntimeException(e);
-        }
+    public PrivKey getCborSigningKey() {
+        return new JvmPrivKey(privateKey);
     }
 
     @Override
@@ -88,12 +87,8 @@ public class EhdCryptoService implements CryptoService {
     }
 
     @Override
-    public X509Certificate getCertificate() {
-        if (Arrays.compare(this.kid, kid) == 0) {
-            return cert;
-        } else {
-            throw new IllegalArgumentException("unknown kid");
-        }
+    public CertificateAdapter getCertificate() {
+        return new CertificateAdapter(cert);
     }
 
     @Override

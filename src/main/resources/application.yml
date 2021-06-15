@@ -55,7 +55,7 @@ issuance:
   endpoints:
     frontendIssuing: true
     backendIssuing: false
-    testTools: false
+    testTools: true
     wallet: true
     publishCert: true
     did: true
