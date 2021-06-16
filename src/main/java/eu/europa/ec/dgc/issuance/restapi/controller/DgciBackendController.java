@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/context")
+@RequestMapping("/dgci")
 @AllArgsConstructor
 @ConditionalOnExpression("${issuance.endpoints.backendIssuing:false}")
 public class DgciBackendController {

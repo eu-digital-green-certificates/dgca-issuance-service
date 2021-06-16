@@ -4,7 +4,6 @@ import COSE.ASN1;
 import COSE.CoseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.SampleData;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
@@ -99,11 +98,9 @@ class DgciServiceTest {
     @Test
     void testCreateEdgcBackend() throws Exception {
         String vacDataJson = SampleData.Companion.getVaccination();
-        ObjectMapper objectMapper = new ObjectMapper();
-        Eudgc eudgc = objectMapper.readValue(vacDataJson,Eudgc.class);
-        EgdcCodeData egdcCodeData = dgciService.createEdgc(eudgc);
+        EgdcCodeData egdcCodeData = dgciService.createEdgc(vacDataJson);
         assertNotNull(egdcCodeData);
-        assertNotNull(egdcCodeData.getQrcCode());
+        assertNotNull(egdcCodeData.getQrCode());
         Optional<DgciEntity> dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertEquals(GreenCertificateType.Vaccination,dgciEnitiyOpt.get().getGreenCertificateType());
@@ -112,7 +109,7 @@ class DgciServiceTest {
         assertNotNull(dgciEnitiyOpt.get().getHashedTan());
         assertNotNull(dgciEnitiyOpt.get().getExpiresAt());
 
-        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrcCode());
+        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrCode());
         assertTrue(decodeResult.isValidated());
         assertNull(decodeResult.getErrorMessage());
         JsonNode cborJson = decodeResult.getCborJson();
@@ -128,11 +125,9 @@ class DgciServiceTest {
     @Test
     void testWalletClaim() throws Exception {
         String vacDataJson = SampleData.Companion.getVaccination();
-        ObjectMapper objectMapper = new ObjectMapper();
-        Eudgc eudgc = objectMapper.readValue(vacDataJson,Eudgc.class);
-        EgdcCodeData egdcCodeData = dgciService.createEdgc(eudgc);
+        EgdcCodeData egdcCodeData = dgciService.createEdgc(vacDataJson);
         assertNotNull(egdcCodeData);
-        assertNotNull(egdcCodeData.getQrcCode());
+        assertNotNull(egdcCodeData.getQrCode());
         Optional<DgciEntity> dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertFalse(dgciEnitiyOpt.get().isClaimed());
@@ -140,7 +135,7 @@ class DgciServiceTest {
         String certHash = dgciEnitiyOpt.get().getCertHash();
         assertEquals(GreenCertificateType.Vaccination,dgciEnitiyOpt.get().getGreenCertificateType());
 
-        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrcCode());
+        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrCode());
         assertTrue(decodeResult.isValidated());
         assertNull(decodeResult.getErrorMessage());
 
@@ -166,6 +161,7 @@ class DgciServiceTest {
         assertNotNull(didDocument);
         assertNotNull(didDocument.getAuthentication());
         assertFalse(didDocument.getAuthentication().isEmpty());
+        ObjectMapper objectMapper = new ObjectMapper();
         System.out.println(objectMapper.writeValueAsString(didDocument.getAuthentication().get(0).getPublicKeyJsw()));
 
     }
@@ -179,11 +175,9 @@ class DgciServiceTest {
     @Test
     void testWalletClaimEC() throws Exception {
         String vacDataJson = SampleData.Companion.getVaccination();
-        ObjectMapper objectMapper = new ObjectMapper();
-        Eudgc eudgc = objectMapper.readValue(vacDataJson,Eudgc.class);
-        EgdcCodeData egdcCodeData = dgciService.createEdgc(eudgc);
+        EgdcCodeData egdcCodeData = dgciService.createEdgc(vacDataJson);
         assertNotNull(egdcCodeData);
-        assertNotNull(egdcCodeData.getQrcCode());
+        assertNotNull(egdcCodeData.getQrCode());
         Optional<DgciEntity> dgciEnitiyOpt = dgciRepository.findByDgci(egdcCodeData.getDgci());
         assertTrue(dgciEnitiyOpt.isPresent());
         assertFalse(dgciEnitiyOpt.get().isClaimed());
@@ -191,7 +185,7 @@ class DgciServiceTest {
         String certHash = dgciEnitiyOpt.get().getCertHash();
         assertEquals(GreenCertificateType.Vaccination,dgciEnitiyOpt.get().getGreenCertificateType());
 
-        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrcCode());
+        EgcDecodeResult decodeResult = edgcValidator.decodeEdgc(egdcCodeData.getQrCode());
         assertTrue(decodeResult.isValidated());
         assertNull(decodeResult.getErrorMessage());
 
@@ -209,6 +203,7 @@ class DgciServiceTest {
         assertNotNull(didDocument);
         assertNotNull(didDocument.getAuthentication());
         assertFalse(didDocument.getAuthentication().isEmpty());
+        ObjectMapper objectMapper = new ObjectMapper();
         System.out.println(objectMapper.writeValueAsString(didDocument.getAuthentication().get(0).getPublicKeyJsw()));
     }
 

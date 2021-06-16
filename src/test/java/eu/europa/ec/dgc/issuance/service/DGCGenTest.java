@@ -2,7 +2,8 @@ package eu.europa.ec.dgc.issuance.service;
 
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
-import ehn.techiop.hcert.kotlin.chain.common.Base45Encoder;
+import ehn.techiop.hcert.kotlin.chain.Base45Service;
+import ehn.techiop.hcert.kotlin.chain.impl.DefaultBase45Service;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciIdentifier;
 import eu.europa.ec.dgc.issuance.restapi.dto.DgciInit;
@@ -114,8 +115,8 @@ class DGCGenTest {
         ByteArrayInputStream bis = new ByteArrayInputStream(cose);
         DeflaterInputStream compessedInput = new DeflaterInputStream(bis, new Deflater(9));
         byte[] coseCompressed = compessedInput.readAllBytes();
-        Base45Encoder base45Encoder = new Base45Encoder();
-        String coded = base45Encoder.encode(coseCompressed);
+        Base45Service base45Service = new DefaultBase45Service();
+        String coded = base45Service.encode(coseCompressed);
         return "HC1:"+coded;
     }
 }

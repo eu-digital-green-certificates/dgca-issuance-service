@@ -1,10 +1,11 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.SampleData;
+import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import kotlinx.serialization.json.Json;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,21 +21,21 @@ class ExpirationServiceTest {
     @Test
     void testExpriationCalculation() throws Exception {
         String vacDataJson = SampleData.Companion.getVaccination();
-        Eudgc eudgc = testCalculation("vactination",vacDataJson);
-        System.out.println(eudgc.getV().get(0).getDt());
+        GreenCertificate eudgc = testCalculation("vactination",vacDataJson);
+        System.out.println(eudgc.getVaccinations().get(0).getDate());
         String recoveryDataJson = SampleData.Companion.getRecovery();
         eudgc = testCalculation("recovery",recoveryDataJson);
-        System.out.println(eudgc.getR().get(0).getDu());
+        System.out.println(eudgc.getRecoveryStatements().get(0).getCertificateValidUntil());
         String testDataJson = SampleData.Companion.getTestNaa();
         eudgc = testCalculation("test",testDataJson);
-        System.out.println(eudgc.getT().get(0).getSc().toInstant().atOffset(ZoneOffset.UTC));
+        System.out.println(eudgc.getTests().get(0).getDateTimeSample());
         assertNotNull(eudgc);
 
     }
 
-    private Eudgc testCalculation(String description, String vacDataJson) throws com.fasterxml.jackson.core.JsonProcessingException {
+    private GreenCertificate testCalculation(String description, String vacDataJson) throws com.fasterxml.jackson.core.JsonProcessingException {
         System.out.println("testing: "+description);
-        Eudgc eudgc = objectMapper.readValue(vacDataJson,Eudgc.class);
+        GreenCertificate eudgc = Json.Default.decodeFromString(GreenCertificate.Companion.serializer(), vacDataJson);
         ExpirationService.CwtTimeFields expTime = expirationService.calculateCwtExpiration(eudgc);
         LocalDateTime issuedAt = LocalDateTime.ofEpochSecond(expTime.getIssuedAt(), 0, ZoneOffset.UTC);
         assertNotNull(issuedAt);
