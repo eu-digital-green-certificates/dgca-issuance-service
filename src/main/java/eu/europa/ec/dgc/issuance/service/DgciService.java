@@ -23,13 +23,13 @@ package eu.europa.ec.dgc.issuance.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.Base64URL;
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
-import ehn.techiop.hcert.data.Eudgc;
 import ehn.techiop.hcert.kotlin.chain.Base45Service;
 import ehn.techiop.hcert.kotlin.chain.CborService;
 import ehn.techiop.hcert.kotlin.chain.Chain;
@@ -37,6 +37,9 @@ import ehn.techiop.hcert.kotlin.chain.ChainResult;
 import ehn.techiop.hcert.kotlin.chain.CompressorService;
 import ehn.techiop.hcert.kotlin.chain.ContextIdentifierService;
 import ehn.techiop.hcert.kotlin.chain.CoseService;
+import ehn.techiop.hcert.kotlin.chain.CwtService;
+import ehn.techiop.hcert.kotlin.chain.SchemaValidationService;
+import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
@@ -71,6 +74,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import kotlinx.serialization.SerializationException;
+import kotlinx.serialization.json.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -93,9 +98,11 @@ public class DgciService {
     private final DgciGenerator dgciGenerator;
     private final CborService cborService;
     private final CoseService coseService;
+    private final CwtService cwtService;
     private final ContextIdentifierService contextIdentifierService;
     private final CompressorService compressorService;
     private final Base45Service base45Service;
+    private final SchemaValidationService schemaValidationService;
     private final ExpirationService expirationService;
 
     private static final int MAX_CLAIM_RETRY_TAN = 3;
@@ -363,37 +370,42 @@ public class DgciService {
     /**
      * Create edgc in backend.
      *
-     * @param eudgc certificate
+     * @param dccJson certificate
      * @return edgc qr code and tan
      */
-    public EgdcCodeData createEdgc(Eudgc eudgc) {
+    public EgdcCodeData createEdgc(String dccJson) {
         String dgci = dgciGenerator.newDgci();
+        dccJson = updateCI(dccJson, dgci);
+
+        GreenCertificate eudgc;
+        try {
+            eudgc = Json.Default.decodeFromString(GreenCertificate.Companion.serializer(), dccJson);
+        } catch (SerializationException se) {
+            throw new WrongRequest(se.getMessage());
+        }
         GreenCertificateType greenCertificateType = GreenCertificateType.Vaccination;
-        if (eudgc.getR() != null) {
-            for (val v : eudgc.getR()) {
-                v.setCi(dgci);
+        if (eudgc.getRecoveryStatements() != null) {
+            for (val v : eudgc.getRecoveryStatements()) {
                 greenCertificateType = GreenCertificateType.Recovery;
             }
         }
-        if (eudgc.getT() != null) {
-            for (val v : eudgc.getT()) {
-                v.setCi(dgci);
+        if (eudgc.getTests() != null) {
+            for (val v : eudgc.getTests()) {
                 greenCertificateType = GreenCertificateType.Test;
             }
         }
-        if (eudgc.getV() != null) {
-            for (val v : eudgc.getV()) {
-                v.setCi(dgci);
+        if (eudgc.getVaccinations() != null) {
+            for (val v : eudgc.getVaccinations()) {
                 greenCertificateType = GreenCertificateType.Vaccination;
             }
         }
         Chain cborProcessingChain =
-            new Chain(cborService, coseService,
-                contextIdentifierService, compressorService, base45Service);
+            new Chain(cborService, cwtService, coseService,
+                contextIdentifierService, compressorService, base45Service, schemaValidationService);
         ChainResult chainResult = cborProcessingChain.encode(eudgc);
 
         EgdcCodeData egdcCodeData = new EgdcCodeData();
-        egdcCodeData.setQrcCode(chainResult.getStep5Prefixed());
+        egdcCodeData.setQrCode(chainResult.getStep5Prefixed());
         egdcCodeData.setDgci(dgci);
         Tan ta = Tan.create();
         egdcCodeData.setTan(ta.getRawTan());
@@ -409,6 +421,34 @@ public class DgciService {
         dgciRepository.saveAndFlush(dgciEntity);
 
         return egdcCodeData;
+    }
+
+    private String updateCI(String dccJson, String dgci) {
+        // The fields can be not modified on GreenCertificate object so we need to set ci on json level
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode dccTree = mapper.readTree(dccJson);
+            updateCI(dccTree, dgci);
+            return mapper.writeValueAsString(dccTree);
+        } catch (JsonProcessingException e) {
+            throw new WrongRequest(e.getMessage());
+        }
+    }
+
+    private void updateCI(JsonNode jsonNode, String dgci) {
+        if (jsonNode.isObject()) {
+            if (jsonNode.has("ci")) {
+                ((ObjectNode)jsonNode).put("ci",dgci);
+            } else {
+                for (JsonNode value : jsonNode) {
+                    updateCI(value, dgci);
+                }
+            }
+        } else if (jsonNode.isArray()) {
+            for (JsonNode item : jsonNode) {
+                updateCI(item, dgci);
+            }
+        }
     }
 
     /**

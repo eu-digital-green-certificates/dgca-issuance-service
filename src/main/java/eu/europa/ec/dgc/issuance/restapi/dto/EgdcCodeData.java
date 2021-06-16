@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class EgdcCodeData {
     String dgci;
-    String qrcCode;
+    String qrCode;
     String tan;
 }

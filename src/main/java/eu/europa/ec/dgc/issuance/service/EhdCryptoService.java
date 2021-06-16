@@ -21,12 +21,15 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import COSE.AlgorithmID;
-import COSE.CoseException;
-import COSE.HeaderKeys;
-import COSE.OneKey;
 import com.upokecenter.cbor.CBORObject;
 import ehn.techiop.hcert.kotlin.chain.CryptoService;
 import ehn.techiop.hcert.kotlin.chain.VerificationResult;
+import ehn.techiop.hcert.kotlin.crypto.CertificateAdapter;
+import ehn.techiop.hcert.kotlin.crypto.CoseHeaderKeys;
+import ehn.techiop.hcert.kotlin.crypto.JvmPrivKey;
+import ehn.techiop.hcert.kotlin.crypto.JvmPubKey;
+import ehn.techiop.hcert.kotlin.crypto.PrivKey;
+import ehn.techiop.hcert.kotlin.crypto.PubKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateCrtKey;
@@ -39,7 +42,7 @@ import org.springframework.stereotype.Component;
 public class EhdCryptoService implements CryptoService {
     private final X509Certificate cert;
     private final byte[] kid;
-    private final List<Pair<HeaderKeys, CBORObject>> headers;
+    private final List<Pair<CoseHeaderKeys, Object>> headers;
     private final PrivateKey privateKey;
 
     /**
@@ -52,48 +55,37 @@ public class EhdCryptoService implements CryptoService {
         this.privateKey = certificateService.getPrivateKey();
         kid = certificateService.getKid();
         if (this.privateKey instanceof RSAPrivateCrtKey) {
-            headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.RSA_PSS_256.AsCBOR()),
-                new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
+            headers = Arrays.asList(new Pair<>(CoseHeaderKeys.ALGORITHM, AlgorithmID.RSA_PSS_256.AsCBOR()),
+                new Pair<>(CoseHeaderKeys.KID, CBORObject.FromObject(kid)));
         } else {
-            headers = Arrays.asList(new Pair<>(HeaderKeys.Algorithm, AlgorithmID.ECDSA_256.AsCBOR()),
-                new Pair<>(HeaderKeys.KID, CBORObject.FromObject(kid)));
+            headers = Arrays.asList(new Pair<>(CoseHeaderKeys.ALGORITHM, AlgorithmID.ECDSA_256.AsCBOR()),
+                new Pair<>(CoseHeaderKeys.KID, CBORObject.FromObject(kid)));
         }
     }
 
+
     @Override
-    public List<Pair<HeaderKeys, CBORObject>> getCborHeaders() {
+    public List<Pair<CoseHeaderKeys, Object>> getCborHeaders() {
         return headers;
     }
 
     @Override
-    public COSE.OneKey getCborSigningKey() {
-        try {
-            return new OneKey(cert.getPublicKey(), privateKey);
-        } catch (CoseException e) {
-            throw new RuntimeException(e);
-        }
+    public PrivKey getCborSigningKey() {
+        return new JvmPrivKey(privateKey);
     }
 
     @Override
-    public COSE.OneKey getCborVerificationKey(byte[] bytes, VerificationResult verificationResult) {
+    public PubKey getCborVerificationKey(byte[] bytes, VerificationResult verificationResult) {
         if (Arrays.compare(this.kid, kid) == 0) {
-            try {
-                return new OneKey(cert.getPublicKey(), privateKey);
-            } catch (CoseException e) {
-                throw new RuntimeException(e);
-            }
+            return new JvmPubKey(cert.getPublicKey());
         } else {
             throw new IllegalArgumentException("unknown kid");
         }
     }
 
     @Override
-    public X509Certificate getCertificate() {
-        if (Arrays.compare(this.kid, kid) == 0) {
-            return cert;
-        } else {
-            throw new IllegalArgumentException("unknown kid");
-        }
+    public CertificateAdapter getCertificate() {
+        return new CertificateAdapter(cert);
     }
 
     @Override

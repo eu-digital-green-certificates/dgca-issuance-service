@@ -1,14 +1,12 @@
 package eu.europa.ec.dgc.issuance.service;
 
-import ehn.techiop.hcert.data.Eudgc;
+import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -55,27 +53,27 @@ public class ExpirationService {
      * @param eudgc json data of dgc
      * @return the times
      */
-    public CwtTimeFields calculateCwtExpiration(Eudgc eudgc) {
+    public CwtTimeFields calculateCwtExpiration(GreenCertificate eudgc) {
         CwtTimeFields result = new CwtTimeFields();
         GreenCertificateType greenCertificateType;
         long expirationTime;
         long issueTime = Instant.now().getEpochSecond();
         long expirationStartTime = issueTime;
 
-        if (eudgc.getT() != null && !eudgc.getT().isEmpty()) {
+        if (eudgc.getTests() != null && !eudgc.getTests().isEmpty()) {
             greenCertificateType = GreenCertificateType.Test;
-            expirationStartTime = extractTimesSec(eudgc.getT().get(0).getSc(),expirationStartTime);
+            expirationStartTime = extractTimesSec(eudgc.getTests().get(0).getDateTimeSample(),expirationStartTime);
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
-        } else if (eudgc.getR() != null && !eudgc.getR().isEmpty()) {
+        } else if (eudgc.getRecoveryStatements() != null && !eudgc.getRecoveryStatements().isEmpty()) {
             greenCertificateType = GreenCertificateType.Recovery;
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
-            expirationTime = extractTimesSec(eudgc.getR().get(0).getDu(),expirationTime);
-        } else if (eudgc.getV() != null && !eudgc.getV().isEmpty()) {
+            expirationTime = extractTimesSec(eudgc.getRecoveryStatements().get(0).getCertificateValidUntil(),
+                expirationTime);
+        } else if (eudgc.getVaccinations() != null && !eudgc.getVaccinations().isEmpty()) {
             greenCertificateType = GreenCertificateType.Vaccination;
-            expirationStartTime = extractTimesSec(eudgc.getV().get(0).getDt(),expirationStartTime);
+            expirationStartTime = extractTimesSec(eudgc.getVaccinations().get(0).getDate(),expirationStartTime);
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
         } else {
-            // fallback
             greenCertificateType = GreenCertificateType.Vaccination;
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
         }
@@ -84,20 +82,20 @@ public class ExpirationService {
         return result;
     }
 
-    private long extractTimesSec(Date date, long defaultTimeSec) {
+    private long extractTimesSec(kotlinx.datetime.Instant date, long defaultTimeSec) {
         long timeSec;
         if (date != null) {
-            timeSec = date.toInstant().getEpochSecond();
+            timeSec = date.getEpochSeconds();
         } else {
             timeSec = defaultTimeSec;
         }
         return timeSec;
     }
 
-    private long extractTimesSec(String dateAsString, long defaultTimeSec) {
+    private long extractTimesSec(kotlinx.datetime.LocalDate localDate, long defaultTimeSec) {
         long timeSec;
-        if (dateAsString != null && dateAsString.length() > 0) {
-            timeSec = LocalDate.parse(dateAsString).atStartOfDay().toInstant(ZoneOffset.UTC).getEpochSecond();
+        if (localDate != null) {
+            timeSec = localDate.getValue$kotlinx_datetime().atStartOfDay().toEpochSecond(ZoneOffset.UTC);
         } else {
             timeSec = defaultTimeSec;
         }
