@@ -67,7 +67,8 @@ public class ExpirationService {
         } else if (eudgc.getRecoveryStatements() != null && !eudgc.getRecoveryStatements().isEmpty()) {
             greenCertificateType = GreenCertificateType.Recovery;
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
-            expirationTime = extractTimesSec(eudgc.getRecoveryStatements().get(0).getCertificateValidUntil(),expirationTime);
+            expirationTime = extractTimesSec(eudgc.getRecoveryStatements().get(0).getCertificateValidUntil(),
+                expirationTime);
         } else if (eudgc.getVaccinations() != null && !eudgc.getVaccinations().isEmpty()) {
             greenCertificateType = GreenCertificateType.Vaccination;
             expirationStartTime = extractTimesSec(eudgc.getVaccinations().get(0).getDate(),expirationStartTime);
@@ -93,7 +94,7 @@ public class ExpirationService {
 
     private long extractTimesSec(kotlinx.datetime.LocalDate localDate, long defaultTimeSec) {
         long timeSec;
-        if (localDate!=null) {
+        if (localDate != null) {
             timeSec = localDate.getValue$kotlinx_datetime().atStartOfDay().toEpochSecond(ZoneOffset.UTC);
         } else {
             timeSec = defaultTimeSec;
