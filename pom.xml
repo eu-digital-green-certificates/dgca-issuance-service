@@ -289,6 +289,10 @@
       <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
       <artifactId>scp-cf</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.sap.hcp.cf.logging</groupId>
+      <artifactId>cf-java-logging-support-logback</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
