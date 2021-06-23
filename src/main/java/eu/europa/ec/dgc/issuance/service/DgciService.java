@@ -128,7 +128,7 @@ public class DgciService {
         dgciEntity.setExpiresAt(expiration);
         dgciRepository.saveAndFlush(dgciEntity);
 
-        log.info("init dgci: {} id: {}", dgci, dgciEntity.getId());
+        log.debug("Initialized new certificate with ID '{}' and database ID '{}'.", dgci, dgciEntity.getId());
 
         long expirationSec = expiration.toInstant().getEpochSecond();
         byte[] dgciHash = Base64.getDecoder().decode(dgciEntity.getDgciHash());
@@ -159,9 +159,10 @@ public class DgciService {
      * @return signature data
      */
     public SignatureData finishDgci(String dgciId, IssueData issueData) {
+        log.debug("Finalizing certificate with ID '{}'.", dgciId);
         int colIdx = dgciId.indexOf(ID_SEP);
         if (colIdx < 0) {
-            throw new WrongRequest("id unknown");
+            throw new WrongRequest("ID unknown");
         }
         long id = Long.parseLong(dgciId.substring(0,colIdx));
         byte[] dgciHash = Base64URL.from(dgciId.substring(colIdx + 1)).decode();
@@ -169,22 +170,22 @@ public class DgciService {
         Optional<DgciEntity> dgciEntityOpt = dgciRepository.findById(id);
         if (dgciEntityOpt.isPresent()) {
             if (dgciEntityOpt.get().getCertHash() != null) {
-                throw new DgciConflict("already signed");
+                throw new DgciConflict("Already signed");
             }
             if (!dgciEntityOpt.get().getDgciHash().equals(dgciHashBase64)) {
-                throw new DgciNotFound("dgci not found");
+                throw new DgciNotFound("DGCI not found (hash mismatch)");
             }
             var dgciEntity = dgciEntityOpt.get();
             Tan tan = Tan.create();
             dgciEntity.setHashedTan(tan.getHashedTan());
             dgciEntity.setCertHash(issueData.getHash());
             dgciRepository.saveAndFlush(dgciEntity);
-            log.info("signed for " + dgciId);
+            log.debug("Done finalizing certificate with ID '{}'. ", dgciId);
             String signatureBase64 = certificateService.signHash(issueData.getHash());
             return new SignatureData(tan.getRawTan(), signatureBase64);
         } else {
-            log.warn("can not find dgci with id " + dgciId);
-            throw new DgciNotFound("dgci with id " + dgciId + " not found");
+            log.warn("Cannot find certificate with ID '{}'.", dgciId);
+            throw new DgciNotFound("Certificate with ID '" + dgciId + "' not found");
         }
     }
 
@@ -257,28 +258,29 @@ public class DgciService {
      * @param claimRequest claim request
      */
     public ClaimResponse claim(ClaimRequest claimRequest) {
+        log.debug("Claim certificate with ID '{}'", claimRequest.getDgci());
         if (!verifySignature(claimRequest)) {
-            throw new WrongRequest("signature verification failed");
+            throw new WrongRequest("Signature verification failed");
         }
         Optional<DgciEntity> dgciEntityOptional = dgciRepository.findByDgci(claimRequest.getDgci());
         if (dgciEntityOptional.isPresent()) {
             DgciEntity dgciEntity = dgciEntityOptional.get();
             if (dgciEntity.getRetryCounter() > MAX_CLAIM_RETRY_TAN) {
-                throw new WrongRequest("claim max try exceeded");
+                throw new WrongRequest("Claim max try exceeded");
             }
             if (!dgciEntity.getCertHash().equals(claimRequest.getCertHash())) {
-                throw new WrongRequest("cert hash mismatch");
+                throw new WrongRequest("Cert hash mismatch");
             }
             if (!dgciEntity.getHashedTan().equals(claimRequest.getTanHash())) {
                 dgciEntity.setRetryCounter(dgciEntity.getRetryCounter() + 1);
                 dgciRepository.saveAndFlush(dgciEntity);
-                throw new WrongRequest("tan mismatch");
+                throw new WrongRequest("TAN mismatch");
             }
             if (!dgciEntity.isClaimed()) {
                 ZonedDateTime tanExpireTime = dgciEntity.getCreatedAt()
                     .plus(issuanceConfigProperties.getTanExpirationHours());
                 if (tanExpireTime.isBefore(ZonedDateTime.now())) {
-                    throw new WrongRequest("tan expired");
+                    throw new WrongRequest("TAN expired");
                 }
             }
             dgciEntity.setClaimed(true);
@@ -287,14 +289,15 @@ public class DgciService {
             Tan newTan = Tan.create();
             dgciEntity.setHashedTan(newTan.getHashedTan());
             dgciEntity.setRetryCounter(0);
-            log.info("dgci {} claimed", dgciEntity.getDgci());
             dgciRepository.saveAndFlush(dgciEntity);
+            log.info("Certificate with ID '{}' successfully claimed.", dgciEntity.getDgci());
+
             ClaimResponse claimResponse = new ClaimResponse();
             claimResponse.setTan(newTan.getRawTan());
             return claimResponse;
         } else {
-            log.info("can not find dgci {}", claimRequest.getDgci());
-            throw new DgciNotFound("can not find dgci: " + claimRequest.getDgci());
+            log.warn("Cannot find certificate with ID '{}'", claimRequest.getDgci());
+            throw new DgciNotFound("Cannot find DGCI: " + claimRequest.getDgci());
         }
     }
 
@@ -458,15 +461,19 @@ public class DgciService {
      * @return DgciStatus
      */
     public DgciStatus checkDgciStatus(String dgciHash) {
+        log.debug("Checking status of DGC with hash '{}'...", dgciHash);
         DgciStatus dgciStatus;
         Optional<DgciEntity> dgciEntity = dgciRepository.findByDgciHash(dgciHash);
         if (dgciEntity.isPresent()) {
             if (dgciEntity.get().isLocked()) {
+                log.debug("DGC with hash '{}' is locked.", dgciHash);
                 dgciStatus = DgciStatus.LOCKED;
             } else {
+                log.debug("DGC with hash '{}' exists.", dgciHash);
                 dgciStatus = DgciStatus.EXISTS;
             }
         } else {
+            log.debug("DGC with hash '{}' does not exist.", dgciHash);
             dgciStatus = DgciStatus.NOT_EXISTS;
         }
         return dgciStatus;

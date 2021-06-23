@@ -1,0 +1,25 @@
+<configuration debug="false" scan="false">
+
+  <springProfile name="!btp">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <logger name="eu.europa.ec" level="DEBUG"/>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
+
+  <springProfile name="btp">
+    <appender name="STDOUT-JSON" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="com.sap.hcp.cf.logback.encoder.JsonEncoder"/>
+    </appender>
+
+    <root level="${LOG_ROOT_LEVEL:-WARN}">
+      <appender-ref ref="STDOUT-JSON"/>
+    </root>
+
+    <logger name="eu.europa.ec" level="DEBUG"/>
+  </springProfile>
+
+</configuration>
