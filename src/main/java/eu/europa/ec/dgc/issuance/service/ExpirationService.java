@@ -60,18 +60,18 @@ public class ExpirationService {
         long issueTime = Instant.now().getEpochSecond();
         long expirationStartTime = issueTime;
 
-        if (eudgc.getTests() != null && !eudgc.getTests().isEmpty()) {
+        if (eudgc.getTests() != null && eudgc.getTests().length > 0) {
             greenCertificateType = GreenCertificateType.Test;
-            expirationStartTime = extractTimesSec(eudgc.getTests().get(0).getDateTimeSample(),expirationStartTime);
+            expirationStartTime = extractTimesSec(eudgc.getTests()[0].getDateTimeSample(),expirationStartTime);
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
-        } else if (eudgc.getRecoveryStatements() != null && !eudgc.getRecoveryStatements().isEmpty()) {
+        } else if (eudgc.getRecoveryStatements() != null && eudgc.getRecoveryStatements().length > 0) {
             greenCertificateType = GreenCertificateType.Recovery;
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
-            expirationTime = extractTimesSec(eudgc.getRecoveryStatements().get(0).getCertificateValidUntil(),
+            expirationTime = extractTimesSec(eudgc.getRecoveryStatements()[0].getCertificateValidUntil(),
                 expirationTime);
-        } else if (eudgc.getVaccinations() != null && !eudgc.getVaccinations().isEmpty()) {
+        } else if (eudgc.getVaccinations() != null && eudgc.getVaccinations().length > 0) {
             greenCertificateType = GreenCertificateType.Vaccination;
-            expirationStartTime = extractTimesSec(eudgc.getVaccinations().get(0).getDate(),expirationStartTime);
+            expirationStartTime = extractTimesSec(eudgc.getVaccinations()[0].getDate(),expirationStartTime);
             expirationTime = expirationStartTime + expirationForType(greenCertificateType).get(ChronoUnit.SECONDS);
         } else {
             greenCertificateType = GreenCertificateType.Vaccination;

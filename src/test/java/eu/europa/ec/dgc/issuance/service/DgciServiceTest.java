@@ -4,7 +4,6 @@ import COSE.ASN1;
 import COSE.CoseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ehn.techiop.hcert.kotlin.chain.SampleData;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import eu.europa.ec.dgc.issuance.entity.DgciEntity;
 import eu.europa.ec.dgc.issuance.entity.GreenCertificateType;
@@ -97,7 +96,7 @@ class DgciServiceTest {
 
     @Test
     void testCreateEdgcBackend() throws Exception {
-        String vacDataJson = SampleData.Companion.getVaccination();
+        String vacDataJson = SampleData.vaccination;
         EgdcCodeData egdcCodeData = dgciService.createEdgc(vacDataJson);
         assertNotNull(egdcCodeData);
         assertNotNull(egdcCodeData.getQrCode());
@@ -124,7 +123,7 @@ class DgciServiceTest {
 
     @Test
     void testWalletClaim() throws Exception {
-        String vacDataJson = SampleData.Companion.getVaccination();
+        String vacDataJson = SampleData.vaccination;
         EgdcCodeData egdcCodeData = dgciService.createEdgc(vacDataJson);
         assertNotNull(egdcCodeData);
         assertNotNull(egdcCodeData.getQrCode());
@@ -174,7 +173,7 @@ class DgciServiceTest {
 
     @Test
     void testWalletClaimEC() throws Exception {
-        String vacDataJson = SampleData.Companion.getVaccination();
+        String vacDataJson = SampleData.vaccination;
         EgdcCodeData egdcCodeData = dgciService.createEdgc(vacDataJson);
         assertNotNull(egdcCodeData);
         assertNotNull(egdcCodeData.getQrCode());
