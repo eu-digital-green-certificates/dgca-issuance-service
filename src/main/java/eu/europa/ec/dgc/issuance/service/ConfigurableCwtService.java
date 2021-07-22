@@ -4,6 +4,7 @@ import com.upokecenter.cbor.CBORObject;
 import ehn.techiop.hcert.kotlin.chain.CwtService;
 import ehn.techiop.hcert.kotlin.chain.VerificationResult;
 import ehn.techiop.hcert.kotlin.crypto.CwtHeaderKeys;
+import ehn.techiop.hcert.kotlin.data.CborObject;
 import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
 import kotlinx.serialization.json.Json;
@@ -19,7 +20,7 @@ public class ConfigurableCwtService implements CwtService {
 
     @NotNull
     @Override
-    public byte[] decode(@NotNull byte[] bytes, @NotNull VerificationResult verificationResult) {
+    public CborObject decode(@NotNull byte[] bytes, @NotNull VerificationResult verificationResult) {
         throw new UnsupportedOperationException("decoding not supported");
     }
 
@@ -40,4 +41,6 @@ public class ConfigurableCwtService implements CwtService {
         cwtMap.Add(CwtHeaderKeys.HCERT.getIntVal(), hcertMap);
         return cwtMap.EncodeToBytes();
     }
+
+
 }

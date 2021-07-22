@@ -38,6 +38,7 @@ import ehn.techiop.hcert.kotlin.chain.CompressorService;
 import ehn.techiop.hcert.kotlin.chain.ContextIdentifierService;
 import ehn.techiop.hcert.kotlin.chain.CoseService;
 import ehn.techiop.hcert.kotlin.chain.CwtService;
+import ehn.techiop.hcert.kotlin.chain.HigherOrderValidationService;
 import ehn.techiop.hcert.kotlin.chain.SchemaValidationService;
 import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
@@ -96,6 +97,7 @@ public class DgciService {
     private final CertificateService certificateService;
     private final IssuanceConfigProperties issuanceConfigProperties;
     private final DgciGenerator dgciGenerator;
+    private final HigherOrderValidationService higherOrderValidationService;
     private final CborService cborService;
     private final CoseService coseService;
     private final CwtService cwtService;
@@ -403,8 +405,8 @@ public class DgciService {
             }
         }
         Chain cborProcessingChain =
-            new Chain(cborService, cwtService, coseService,
-                contextIdentifierService, compressorService, base45Service, schemaValidationService);
+            new Chain(higherOrderValidationService, schemaValidationService, cborService, cwtService, coseService,
+                compressorService, base45Service, contextIdentifierService);
         ChainResult chainResult = cborProcessingChain.encode(eudgc);
 
         EgdcCodeData egdcCodeData = new EgdcCodeData();

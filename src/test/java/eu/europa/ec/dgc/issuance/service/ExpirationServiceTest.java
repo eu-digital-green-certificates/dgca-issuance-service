@@ -1,7 +1,6 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ehn.techiop.hcert.kotlin.chain.SampleData;
 import ehn.techiop.hcert.kotlin.data.GreenCertificate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -20,15 +19,15 @@ class ExpirationServiceTest {
 
     @Test
     void testExpriationCalculation() throws Exception {
-        String vacDataJson = SampleData.Companion.getVaccination();
+        String vacDataJson = SampleData.vaccination;
         GreenCertificate eudgc = testCalculation("vactination",vacDataJson);
-        System.out.println(eudgc.getVaccinations().get(0).getDate());
-        String recoveryDataJson = SampleData.Companion.getRecovery();
+        System.out.println(eudgc.getVaccinations()[0].getDate());
+        String recoveryDataJson = SampleData.recovery;
         eudgc = testCalculation("recovery",recoveryDataJson);
-        System.out.println(eudgc.getRecoveryStatements().get(0).getCertificateValidUntil());
-        String testDataJson = SampleData.Companion.getTestNaa();
+        System.out.println(eudgc.getRecoveryStatements()[0].getCertificateValidUntil());
+        String testDataJson = SampleData.testNaa;
         eudgc = testCalculation("test",testDataJson);
-        System.out.println(eudgc.getTests().get(0).getDateTimeSample());
+        System.out.println(eudgc.getTests()[0].getDateTimeSample());
         assertNotNull(eudgc);
 
     }
