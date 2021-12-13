@@ -24,10 +24,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- dependencies -->
-    <dgclib.version>0.4.0</dgclib.version>
+    <dgclib.version>1.1.4</dgclib.version>
     <owasp.version>6.1.6</owasp.version>
     <spring.boot.version>2.4.4</spring.boot.version>
-    <spring.cloud.version>2020.0.2</spring.cloud.version>
+    <spring.cloud.version>3.0.5</spring.cloud.version>
     <spring.test.version>5.3.5</spring.test.version>
     <spring.security.version>5.4.6</spring.security.version>
     <lombok.version>1.18.20</lombok.version>
@@ -98,6 +98,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+          <groupId>org.springframework.cloud</groupId>
+          <artifactId>spring-cloud-openfeign-dependencies</artifactId>
+          <version>3.0.5</version>
+          <type>pom</type>
+          <scope>import</scope>
+       </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-dependencies</artifactId>
