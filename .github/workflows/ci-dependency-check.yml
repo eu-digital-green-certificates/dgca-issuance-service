@@ -2,9 +2,11 @@ name: ci-dependency-check
 on:
   schedule:
     - cron: '0 1 * * 0' # Each Sunday at 01:00 UTC
-  push:
-    branches:
-      - main
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
 jobs:
   build:
     runs-on: ubuntu-20.04
