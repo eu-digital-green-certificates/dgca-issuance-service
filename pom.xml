@@ -24,14 +24,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- dependencies -->
-    <dgclib.version>0.4.0</dgclib.version>
+    <dgclib.version>1.1.7</dgclib.version>
     <owasp.version>6.1.6</owasp.version>
-    <spring.boot.version>2.4.4</spring.boot.version>
-    <spring.cloud.version>2020.0.2</spring.cloud.version>
-    <spring.test.version>5.3.5</spring.test.version>
-    <spring.security.version>5.4.6</spring.security.version>
+    <spring.boot.version>2.5.7</spring.boot.version>
+    <spring.cloud.version>3.0.5</spring.cloud.version>
+    <spring.test.version>5.3.12</spring.test.version>
+    <spring.security.version>5.6.0</spring.security.version>
     <lombok.version>1.18.20</lombok.version>
-    <liquibase.version>4.3.3</liquibase.version>
+    <liquibase.version>4.4.2</liquibase.version>
     <hcert-kotlin.version>1.2.0</hcert-kotlin.version>
     <kotlin.version>1.5.10</kotlin.version>
     <springdoc.version>1.5.7</springdoc.version>
@@ -41,6 +41,8 @@
     <bcpkix.version>1.68</bcpkix.version>
     <okhttp.version>4.9.1</okhttp.version>
     <shedlock.version>4.23.0</shedlock.version>
+    <slf4j.version>1.7.32</slf4j.version>
+    <log4j2.version>2.16.0</log4j2.version> 
     <!-- plugins -->
     <plugin.checkstyle.version>3.1.2</plugin.checkstyle.version>
     <plugin.sonar.version>3.6.1.1688</plugin.sonar.version>
@@ -92,6 +94,21 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <version>2.15.0</version>
+        </dependency>
+       <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+          <version>2.16.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+          <version>2.16.0</version>
+      </dependency>
+      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
         <version>${spring.boot.version}</version>
@@ -99,12 +116,12 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-dependencies</artifactId>
-        <version>${spring.cloud.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+          <groupId>org.springframework.cloud</groupId>
+          <artifactId>spring-cloud-openfeign-dependencies</artifactId>
+          <version>3.0.5</version>
+          <type>pom</type>
+          <scope>import</scope>
+       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
