@@ -25,25 +25,25 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- dependencies -->
     <dgclib.version>1.1.7</dgclib.version>
-    <owasp.version>6.1.6</owasp.version>
-    <spring.boot.version>2.5.7</spring.boot.version>
-    <spring.cloud.version>3.0.5</spring.cloud.version>
+    <owasp.version>6.5.0</owasp.version>
+    <spring.boot.version>2.6.1</spring.boot.version>
+    <spring.cloud.openfeign.version>3.1.0</spring.cloud.openfeign.version>
     <spring.test.version>5.3.12</spring.test.version>
     <spring.security.version>5.6.0</spring.security.version>
-    <lombok.version>1.18.20</lombok.version>
-    <liquibase.version>4.4.2</liquibase.version>
+    <lombok.version>1.18.22</lombok.version>
+    <liquibase.version>4.6.2</liquibase.version>
     <hcert-kotlin.version>1.2.0</hcert-kotlin.version>
     <kotlin.version>1.5.10</kotlin.version>
-    <springdoc.version>1.5.7</springdoc.version>
-    <junit.version>5.7.1</junit.version>
+    <springdoc.version>1.6.0</springdoc.version>
+    <junit.version>5.8.1</junit.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <mockito.version>3.9.0</mockito.version>
-    <bcpkix.version>1.68</bcpkix.version>
-    <okhttp.version>4.9.1</okhttp.version>
-    <shedlock.version>4.23.0</shedlock.version>
+    <mockito.version>4.1.0</mockito.version>
+    <bcpkix.version>1.70</bcpkix.version>
+    <okhttp.version>4.9.2</okhttp.version>
+    <shedlock.version>4.30.0</shedlock.version>
+    <sap.cloud.sdk.version>3.57.0</sap.cloud.sdk.version>
     <slf4j.version>1.7.32</slf4j.version>
-    <log4j2.version>2.16.0</log4j2.version> 
-    <h2.version>2.0.202</h2.version>
+    <log4j2.version>2.16.0</log4j2.version>
     <!-- plugins -->
     <plugin.checkstyle.version>3.1.2</plugin.checkstyle.version>
     <plugin.sonar.version>3.6.1.1688</plugin.sonar.version>
@@ -97,17 +97,17 @@
       <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-to-slf4j</artifactId>
-          <version>2.15.0</version>
+          <version>${log4j2.version}</version>
         </dependency>
        <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-api</artifactId>
-          <version>2.16.0</version>
+          <version>${log4j2.version}</version>
       </dependency>
       <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-core</artifactId>
-          <version>2.16.0</version>
+          <version>${log4j2.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -119,7 +119,7 @@
       <dependency>
           <groupId>org.springframework.cloud</groupId>
           <artifactId>spring-cloud-openfeign-dependencies</artifactId>
-          <version>3.0.5</version>
+          <version>${spring.cloud.openfeign.version}</version>
           <type>pom</type>
           <scope>import</scope>
        </dependency>
@@ -146,7 +146,7 @@
       <dependency>
         <groupId>com.sap.cloud.sdk</groupId>
         <artifactId>sdk-bom</artifactId>
-        <version>3.43.0</version>
+        <version>${sap.cloud.sdk.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -200,11 +200,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.7.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
       <version>${spring.test.version}</version>
@@ -224,7 +219,6 @@
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>runtime</scope>
-      <version>${h2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>

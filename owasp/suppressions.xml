@@ -33,4 +33,8 @@
     <cve>CVE-2019-10101</cve>
     <cve>CVE-2019-10103</cve>
   </suppress>
+  <suppress>
+    <notes>H2 is only used for Unit Testing. Version 2.x includes major breaking changes.</notes>
+    <cve>CVE-2021-23463</cve>
+  </suppress>
 </suppressions>
