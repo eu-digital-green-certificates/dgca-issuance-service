@@ -50,7 +50,7 @@
     <plugin.surefire.version>3.0.0-M5</plugin.surefire.version>
     <!-- license -->
     <license.projectName>EU Digital Green Certificate Issuance Service / dgca-issuance-service</license.projectName>
-    <license.inceptionYear>2022</license.inceptionYear>
+    <license.inceptionYear>2021</license.inceptionYear>
     <license.licenseName>apache_v2</license.licenseName>
     <!-- github -->
     <github.organization>eu-digital-green-certificates</github.organization>
