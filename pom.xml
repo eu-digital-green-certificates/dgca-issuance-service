@@ -24,10 +24,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- dependencies -->
-    <dgclib.version>1.1.7</dgclib.version>
-    <owasp.version>6.5.0</owasp.version>
-    <spring.boot.version>2.6.1</spring.boot.version>
-    <spring.cloud.openfeign.version>3.1.0</spring.cloud.openfeign.version>
+    <dgclib.version>1.1.10</dgclib.version>
+    <owasp.version>6.5.3</owasp.version>
+    <spring.boot.version>2.6.3</spring.boot.version>
+    <hibernate.version>5.6.5.Final</hibernate.version>
     <spring.test.version>5.3.12</spring.test.version>
     <spring.security.version>5.6.0</spring.security.version>
     <lombok.version>1.18.22</lombok.version>
@@ -41,9 +41,9 @@
     <bcpkix.version>1.70</bcpkix.version>
     <okhttp.version>4.9.2</okhttp.version>
     <shedlock.version>4.30.0</shedlock.version>
-    <sap.cloud.sdk.version>3.57.0</sap.cloud.sdk.version>
+    <sap.cloud.sdk.version>3.60.0</sap.cloud.sdk.version>
     <slf4j.version>1.7.32</slf4j.version>
-    <log4j2.version>2.17.0</log4j2.version>
+    <h2.version>2.1.210</h2.version>
     <!-- plugins -->
     <plugin.checkstyle.version>3.1.2</plugin.checkstyle.version>
     <plugin.sonar.version>3.6.1.1688</plugin.sonar.version>
@@ -91,24 +91,8 @@
       <url>https://maven.pkg.github.com/${github.organization}/${github.project}</url>
     </repository>
   </distributionManagement>
-
   <dependencyManagement>
     <dependencies>
-      <dependency>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-to-slf4j</artifactId>
-          <version>${log4j2.version}</version>
-        </dependency>
-       <dependency>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
-          <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-core</artifactId>
-          <version>${log4j2.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -116,13 +100,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-          <groupId>org.springframework.cloud</groupId>
-          <artifactId>spring-cloud-openfeign-dependencies</artifactId>
-          <version>${spring.cloud.openfeign.version}</version>
-          <type>pom</type>
-          <scope>import</scope>
-       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
@@ -152,7 +129,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>eu.europa.ec.dgc</groupId>
@@ -166,6 +142,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -223,6 +210,7 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
