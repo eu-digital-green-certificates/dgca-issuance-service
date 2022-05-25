@@ -28,6 +28,6 @@ public class ContextController {
     )
     @GetMapping(value = "")
     public ResponseEntity<JsonNode> context() {
-        return ResponseEntity.ok(contextService.getContextDefintion());
+        return ResponseEntity.ok(contextService.getContextDefinition());
     }
 }

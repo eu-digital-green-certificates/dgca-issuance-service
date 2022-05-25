@@ -27,31 +27,43 @@ public class ContextService {
      */
     @PostConstruct
     public void loadContextFile() {
-        if (issuanceConfigProperties.getContextFile() != null
-            && issuanceConfigProperties.getContextFile().length() > 0) {
-            File contextFile = new File(issuanceConfigProperties.getContextFile());
-            if (!contextFile.isFile()) {
-                throw new IllegalArgumentException("configured context file can not be found: " + contextFile);
-            }
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                contextDefinition = mapper.readTree(contextFile);
-                log.info("context file loaded from: " + contextFile);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("can not read json context file: " + contextFile, e);
+        if (issuanceConfigProperties.getContextData().isEmpty()) {
+            if (issuanceConfigProperties.getContextFile() != null
+                && issuanceConfigProperties.getContextFile().length() > 0) {
+                File contextFile = new File(issuanceConfigProperties.getContextFile());
+                if (!contextFile.isFile()) {
+                    throw new IllegalArgumentException("configured context file can not be found: " + contextFile);
+                }
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    contextDefinition = mapper.readTree(contextFile);
+                    log.info("context file loaded from: " + contextFile);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException("can not read json context file: " + contextFile, e);
+                }
+            } else {
+                log.warn("the context json file not configured (property: issuance.contextFile)."
+                    + " The empty context file is generated instead");
+                JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
+                ObjectNode contextObj = jsonNodeFactory.objectNode();
+                contextObj.set("Origin", jsonNodeFactory.textNode(issuanceConfigProperties.getCountryCode()));
+                contextObj.set("versions", jsonNodeFactory.objectNode());
+                contextDefinition = contextObj;
             }
         } else {
-            log.warn("the context json file not configured (property: issuance.contextFile)."
-                + " The empty context file is generated instead");
-            JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
-            ObjectNode contextObj = jsonNodeFactory.objectNode();
-            contextObj.set("Origin", jsonNodeFactory.textNode(issuanceConfigProperties.getCountryCode()));
-            contextObj.set("versions", jsonNodeFactory.objectNode());
-            contextDefinition = contextObj;
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                contextDefinition = mapper.readTree(issuanceConfigProperties.getContextData());
+                log.info("context file loaded from Environment variable 'ContextData'");
+            } catch (IOException e) {
+                throw new IllegalArgumentException("can not read json from Environment variable 'ContextData'", e);
+            }
         }
+
+
     }
 
-    public JsonNode getContextDefintion() {
+    public JsonNode getContextDefinition() {
         return contextDefinition;
     }
 }
