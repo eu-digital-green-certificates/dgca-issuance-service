@@ -8,14 +8,14 @@ import org.springframework.core.io.ClassPathResource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SapCredentialParserTest {
+class SapCredentialParserTest {
 
     private static final String EXPECTED_ID = "5f5fa34e-be21-4c7a-8548-4a538b7156ed";
     private static final String EXPECTED_VALUE = "SoMeBaSe64EnCoDeDkEy==";
     private static final String EXPECTED_NAME = "key-name";
 
     @Test
-    public void testJsonParsing() throws IOException {
+    void testJsonParsing() throws IOException {
         ClassPathResource jsonResource = new ClassPathResource("/data/fromCredStore.json");
         String json = Files.readString(jsonResource.getFile().toPath(), StandardCharsets.UTF_8);
 

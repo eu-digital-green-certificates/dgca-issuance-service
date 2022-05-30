@@ -20,7 +20,7 @@ class ContextServiceTest {
     @Test
     void getContextFromEnvironment() {
         JsonNode json = contextService.getContextDefinition();
-        assertTrue("{\"test\":\"Data\"}".equals(json.toString()));
+        assertEquals("{\"test\":\"Data\"}",json.toString());
     }
 
 }

@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EncodingTest {
+class EncodingTest {
 
     public static final String TEST_TAN = "U7ULCYZY";
     public static final String TEST_TAN_HASHED = "avmGz38ugM7uBePwKKlvh3IB8+7O+WFhQEbjIxhTxgY=";
@@ -40,13 +40,13 @@ public class EncodingTest {
     public static final String TEST_DGCI_REP = "NW393C1D87A44870V7TTFQMYC";
 
     @Test
-    public void testCreateSHA256Hash() throws Exception {
+    void testCreateSHA256Hash() {
         String output = HashUtil.sha256Base64(TEST_TAN);
         assertEquals(TEST_TAN_HASHED, output);
     }
 
     @Test
-    public void dgciEncoding() throws Exception {
+    void dgciEncoding() {
         UUID uuid = UUID.fromString(TEST_UUID);
         String dgciRep = DgciUtil.encodeDgci(uuid);
         assertEquals(25, dgciRep.length());
@@ -54,7 +54,7 @@ public class EncodingTest {
     }
 
     @Test
-    public void testBase64URL() throws Exception {
+    void testBase64URL() throws Exception {
         String dgci= "URN:UVCI:V1:DE:NW513NLDH01JY3JCMU4M67WOHA";
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(dgci.getBytes(StandardCharsets.UTF_8));

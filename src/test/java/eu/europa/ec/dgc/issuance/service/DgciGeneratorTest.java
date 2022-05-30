@@ -26,9 +26,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DgciGeneratorTest {
+class DgciGeneratorTest {
     @Test
-    public void testGenerateDGCI() throws Exception {
+    void testGenerateDGCI() {
         IssuanceConfigProperties issuanceConfigProperties = new IssuanceConfigProperties();
         issuanceConfigProperties.setDgciPrefix("URN:UVCI:V1:DE");
         DgciGenerator dgciGenerator = new DgciGenerator(issuanceConfigProperties);

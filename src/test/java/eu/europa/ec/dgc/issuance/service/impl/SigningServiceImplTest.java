@@ -17,13 +17,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SigningServiceImplTest {
+class SigningServiceImplTest {
 
     private OneKey key;
     private CBORObject payload;
 
     @Test
-    public void testCompareCoseAndSplittedSignEC() throws Exception {
+    void testCompareCoseAndSplittedSignEC() throws Exception {
         payload = CBORObject.FromObject("Test");
         CBORObject kid = CBORObject.FromObject("kid".getBytes());
         key = OneKey.generateKey(AlgorithmID.ECDSA_256);
@@ -81,7 +81,7 @@ public class SigningServiceImplTest {
     }
 
     @Test
-    public void testCompareCoseAndSplittedSignRSA() throws Exception {
+    void testCompareCoseAndSplittedSignRSA() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
         Security.setProperty("crypto.policy", "unlimited");
 
