@@ -34,7 +34,7 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Base64;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GenerateWalletRequestTest {
     // This can be used to generate valid json structure for claim

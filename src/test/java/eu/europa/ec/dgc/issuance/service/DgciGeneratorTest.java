@@ -21,10 +21,10 @@
 package eu.europa.ec.dgc.issuance.service;
 
 import eu.europa.ec.dgc.issuance.config.IssuanceConfigProperties;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DgciGeneratorTest {
     @Test
@@ -35,7 +35,7 @@ public class DgciGeneratorTest {
         String dgci = dgciGenerator.newDgci();
         assertNotNull(dgci);
         assertTrue(dgci.startsWith(issuanceConfigProperties.getDgciPrefix()));
-        assertTrue("dgci too long",dgci.length() <= 50);
+        assertTrue(dgci.length() <= 50,"dgci too long");
         System.out.println(dgci);
     }
 }

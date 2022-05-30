@@ -13,9 +13,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.Signature;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SigningServiceImplTest {
 
