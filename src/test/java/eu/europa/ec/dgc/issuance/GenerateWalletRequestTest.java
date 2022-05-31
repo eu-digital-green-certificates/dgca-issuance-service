@@ -34,12 +34,12 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Base64;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GenerateWalletRequestTest {
+class GenerateWalletRequestTest {
     // This can be used to generate valid json structure for claim
     @Test
-    public void testGenerateWalletRequest() throws Exception {
+    void testGenerateWalletRequest() throws Exception {
         // Please adapt this to your certificate (the values can be get from browser network log
         // see POST /dgci
         // and PUT /dgci/{id}
@@ -93,7 +93,7 @@ public class GenerateWalletRequestTest {
     }
 
     @Test
-    public void testGenerateWalletRequestEC() throws Exception {
+    void testGenerateWalletRequestEC() throws Exception {
         // Please adapt this to your certificate (the values can be get from browser network log
         // see POST /dgci
         // and PUT /dgci/{id}

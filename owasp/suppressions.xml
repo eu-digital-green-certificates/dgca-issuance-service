@@ -36,5 +36,34 @@
   <suppress>
     <notes>H2 is only used for Unit Testing. Version 2.x includes major breaking changes.</notes>
     <cve>CVE-2021-23463</cve>
+    <cve>CVE-2018-14335</cve>
+  </suppress>
+  <suppress>
+    <notes>see https://github.com/jeremylong/DependencyCheck/issues/1827></notes>
+    <cve>CVE-2018-1258</cve>
+  </suppress>
+  <suppress>
+    <notes>see https://github.com/jeremylong/DependencyCheck/issues/2952</notes>
+    <cve>CVE-2011-2732</cve>
+    <cve>CVE-2011-2731</cve>
+    <cve>CVE-2012-5055</cve>
+  </suppress>
+  <suppress>
+    <!-- spring-boot and spring are excluded from cfenv artifact. Related issues can be omitted. -->
+    <notes><![CDATA[file name: java-cfenv-boot-2.3.0.jar]]></notes>
+    <sha1>da214a6f44ee5811c97f3b53a6dda31edf25ac9e</sha1>
+    <cve>CVE-2016-9878</cve>
+    <cve>CVE-2018-1270</cve>
+    <cve>CVE-2018-1271</cve>
+    <cve>CVE-2018-1272</cve>
+    <cve>CVE-2020-5421</cve>
+  </suppress>
+  <suppress>
+    <!--  Vulnerability impacts WebFlux apps only and can be ignored here.  -->
+    <cve>CVE-2021-22118</cve>
+  </suppress>
+  <suppress>
+    <notes>Feature is not enabled in tomcat</notes>
+    <cve>CVE-2022-23181</cve>
   </suppress>
 </suppressions>

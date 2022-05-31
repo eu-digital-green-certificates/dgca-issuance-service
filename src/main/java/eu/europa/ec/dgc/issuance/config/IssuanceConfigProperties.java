@@ -50,6 +50,8 @@ public class IssuanceConfigProperties {
      * JSON file that is provided to /context endpoint.
      */
     private String contextFile;
+    private String contextData = "";
+
     @NotNull
     private Expiration expiration;
 

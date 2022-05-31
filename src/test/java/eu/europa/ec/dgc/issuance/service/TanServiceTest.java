@@ -20,15 +20,15 @@
 
 package eu.europa.ec.dgc.issuance.service;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class TanServiceTest {
+class TanServiceTest {
 
     @Test
-    public void testGenerateTan() throws Exception {
+    void testGenerateTan() throws Exception {
         Tan tan = Tan.create();
         assertNotNull(tan);
         assertEquals(8, tan.getRawTan().length());
