@@ -2,8 +2,10 @@ package eu.europa.ec.dgc.issuance.service.impl;
 
 import eu.europa.ec.dgc.issuance.service.SigningService;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
+import lombok.RequiredArgsConstructor;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -15,10 +17,21 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.PSSSigner;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.support.Plaintext;
 
-@Component
+
+@Service
+@RequiredArgsConstructor
 public class SigningServiceImpl implements SigningService {
+
+    private final VaultTemplate vaultTemplate;
+
+    @Value("${dgc.signKey:issuerkey}")
+    private String signKey;
+
     @Override
     public byte[] signHash(byte[] hashBytes, PrivateKey privateKey) {
         byte[] signature;
@@ -32,6 +45,15 @@ public class SigningServiceImpl implements SigningService {
             throw new IllegalArgumentException("error during signing ", e);
         }
         return signature;
+    }
+
+    @Override
+    public byte[] signHash(byte[] hash) {
+        String signature = vaultTemplate.opsForTransit().sign(signKey, Plaintext.of(hash)).getSignature();
+        if (signature.startsWith("vault:v1:")) {
+            signature = signature.substring(9);
+        }
+        return signature.getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] signRsapss(byte[] hashBytes, PrivateKey privateKey) throws CryptoException {

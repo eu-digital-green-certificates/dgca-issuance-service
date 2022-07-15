@@ -4,7 +4,9 @@ import eu.europa.ec.dgc.issuance.restapi.dto.EgdcCodeData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.vault.core.VaultTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -12,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class DgciControllerTest {
     @Autowired
     DgciBackendController dgciController;
+
+    @MockBean
+    private VaultTemplate vaultTemplate;
 
     @Test
     void checkBackendIssuing() throws Exception {

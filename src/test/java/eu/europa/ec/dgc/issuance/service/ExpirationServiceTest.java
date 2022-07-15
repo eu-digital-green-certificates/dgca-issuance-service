@@ -8,6 +8,8 @@ import kotlinx.serialization.json.Json;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.vault.core.VaultTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -16,6 +18,8 @@ class ExpirationServiceTest {
     @Autowired
     ExpirationService expirationService;
     ObjectMapper objectMapper = new ObjectMapper();
+    @MockBean
+    private VaultTemplate vaultTemplate;
 
     @Test
     void testExpriationCalculation() throws Exception {

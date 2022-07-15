@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.vault.core.VaultTemplate;
 
 @Slf4j
 @SpringBootTest(
@@ -18,6 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
 public class OpenApiTest {
+
+    @MockBean
+    private VaultTemplate vaultTemplate;
 
     @Test
     public void apiDocs() {
