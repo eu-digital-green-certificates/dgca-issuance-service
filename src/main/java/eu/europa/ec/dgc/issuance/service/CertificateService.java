@@ -29,7 +29,6 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -88,7 +87,7 @@ public class CertificateService {
      */
     public String signHash(String base64Hash) {
         byte[] hashBytes = Base64.getDecoder().decode(base64Hash);
-        byte[] signature = signingService.signHash(hashBytes, certificatePrivateKeyProvider.getPrivateKey());
+        byte[] signature = signingService.signHash(hashBytes);
         return Base64.getEncoder().encodeToString(signature);
     }
 

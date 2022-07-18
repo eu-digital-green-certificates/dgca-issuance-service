@@ -8,9 +8,21 @@ public interface SigningService {
      * The it is only the Part of regular signing functionality.
      * Do not use regular Signing API because it will cause to hash the data twice and produce wrong
      * signature
-     * @param hash SHA256 hash of content
+     *
+     * @param hash       SHA256 hash of content
      * @param privateKey RSA or EC
      * @return signature as raw byte array
      */
     byte[] signHash(byte[] hash, PrivateKey privateKey);
+
+    /**
+     * continue signing on already SHA256 generated content hash.
+     * The it is only the Part of regular signing functionality.
+     * Do not use regular Signing API because it will cause to hash the data twice and produce wrong
+     * signature
+     *
+     * @param hash       SHA256 hash of content
+     * @return signature as raw byte array
+     */
+    byte[] signHash(byte[] hash);
 }

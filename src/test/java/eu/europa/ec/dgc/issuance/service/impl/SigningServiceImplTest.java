@@ -21,6 +21,7 @@ class SigningServiceImplTest {
 
     private OneKey key;
     private CBORObject payload;
+    private SigningServiceImpl signingService = new SigningServiceImpl(null);
 
     @Test
     void testCompareCoseAndSplittedSignEC() throws Exception {
@@ -63,8 +64,6 @@ class SigningServiceImplTest {
         validataCoseBytes(ownCoseSigned);
 
         // Own Splitted Sign
-        SigningServiceImpl signingService = new SigningServiceImpl();
-
         byte[] hashbytes = sha256(coseForSignBytes);
         byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
 
@@ -106,8 +105,6 @@ class SigningServiceImplTest {
         byte[] cosePayload = payload.EncodeToBytes();
 
         byte[] coseForSignBytes = computeToSignValue(protectedBytes, cosePayload);
-
-        SigningServiceImpl signingService = new SigningServiceImpl();
 
         byte[] hashbytes = sha256(coseForSignBytes);
         byte[] signatureSplited = signingService.signHash(hashbytes, key.AsPrivateKey());
