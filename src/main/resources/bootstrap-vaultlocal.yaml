@@ -3,7 +3,7 @@ spring:
     vault:
       enabled: true
       # use for local vault transit test (change the access token)
-      token: hvs.qWwAqjjaWnWtFXZkY1q7OYWX
+      token: hvs.zxCKex0OteXGMg3i9UgaMesN
       scheme: http
       fail-fast: true
       # use for local vault transit test (change the uri)

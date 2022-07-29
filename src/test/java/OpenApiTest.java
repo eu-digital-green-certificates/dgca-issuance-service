@@ -13,7 +13,7 @@ import org.springframework.vault.core.VaultTemplate;
 @SpringBootTest(
     classes = DgcIssuanceApplication.class,
     properties = {
-        "server.port=8080",
+        "server.port=8085",
         "springdoc.api-docs.enabled=true",
         "springdoc.api-docs.path=/openapi"
     },
@@ -26,8 +26,8 @@ public class OpenApiTest {
 
     @Test
     public void apiDocs() {
-        try (BufferedInputStream in = new BufferedInputStream(new URL("http://localhost:8080/openapi").openStream());
-            FileOutputStream out = new FileOutputStream("target/openapi.json")) {
+        try (BufferedInputStream in = new BufferedInputStream(new URL("http://localhost:8085/openapi").openStream());
+             FileOutputStream out = new FileOutputStream("target/openapi.json")) {
             byte[] buffer = new byte[1024];
             int read;
             while ((read = in.read(buffer, 0, buffer.length)) != -1) {

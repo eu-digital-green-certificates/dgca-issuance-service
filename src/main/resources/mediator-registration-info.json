@@ -1,0 +1,34 @@
+{
+  "urn": "urn:mediator:who-int-ddcc-mediator",
+  "version": "0.0.1",
+  "name": "WHO DDCC Transactions Mediator",
+  "description": "WHO DDCC Transactions Mediator",
+  "defaultChannelConfig": [
+    {
+      "name": "WHO DDCC Transactions Route",
+      "urlPattern": "^/ddcc/$",
+      "routes": [
+        {
+          "name": "DDCC Endpoint",
+          "host": "localhost",
+          "port": "8500",
+          "primary": true,
+          "type": "http"
+        }
+      ],
+      "allow": ["test"],
+      "methods": ["GET", "POST"],
+      "type": "http"
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "WHO DDCC Transactions Endpoint",
+      "host": "localhost",
+      "path": "/ddcc/",
+      "port": "8500",
+      "primary": true,
+      "type": "http"
+    }
+  ]
+}

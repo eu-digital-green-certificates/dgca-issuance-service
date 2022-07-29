@@ -19,10 +19,10 @@ services:
     image: eu-digital-green-certificates/dgc-issuance-service
     container_name: dgc-issuance-service
     ports:
-      - 8080:8080
+      - 8081:8080
     environment:
       - SERVER_PORT=8080
-      - SPRING_PROFILES_ACTIVE=cloud
+      - SPRING_PROFILES_ACTIVE=vaultlocal
       - SPRING_DATASOURCE_URL=jdbc:postgresql://dgc-issuance-service-postgres:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
