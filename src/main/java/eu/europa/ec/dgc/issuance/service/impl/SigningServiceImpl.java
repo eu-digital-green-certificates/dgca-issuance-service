@@ -15,9 +15,12 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.PSSSigner;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
-@Component
+
+@Service
+@Profile("!vault")
 public class SigningServiceImpl implements SigningService {
     @Override
     public byte[] signHash(byte[] hashBytes, PrivateKey privateKey) {
