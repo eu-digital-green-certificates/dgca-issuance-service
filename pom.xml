@@ -49,7 +49,7 @@
     <shedlock.version>4.30.0</shedlock.version>
     <sap.cloud.sdk.version>3.60.0</sap.cloud.sdk.version>
     <slf4j.version>1.7.32</slf4j.version>
-    <h2.version>2.1.212</h2.version>
+    <h2.version>2.2.220</h2.version>
     <!-- plugins -->
     <plugin.checkstyle.version>3.1.2</plugin.checkstyle.version>
     <plugin.sonar.version>3.6.1.1688</plugin.sonar.version>
